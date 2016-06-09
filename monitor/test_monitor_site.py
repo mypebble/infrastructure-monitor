@@ -24,6 +24,9 @@ class TestMonitor(unittest.TestCase):
 
     @patch('monitor.requests')
     def test_check_status_code_matches(self, mock_requests):
+        """Checks that the status code from the GET request matches the
+        expected status code
+        """
         mock_requests.get.return_value.status_code = 200
 
         url = "http://example.com"
@@ -45,5 +48,3 @@ class TestMonitor(unittest.TestCase):
         output = monitor.check_status_code()
 
         self.assertEqual(output, False)
-
-    def
