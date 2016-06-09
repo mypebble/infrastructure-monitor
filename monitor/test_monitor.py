@@ -2,7 +2,7 @@ import unittest
 
 from mock import patch
 
-from monitor import Monitor
+from monitor import MonitorSite
 
 
 class TestMonitor(unittest.TestCase):
@@ -16,8 +16,32 @@ class TestMonitor(unittest.TestCase):
 
         url = "http://example.com"
         expected_status_code = 200
-        monitor = Monitor(url=url, expected_status_code=expected_status_code)
+        monitor = MonitorSite(url=url, expected_status_code=expected_status_code)
 
         status_code = monitor.get_status_code()
 
         self.assertEqual(status_code, expected_status_code)
+
+    @patch('monitor.requests')
+    def test_check_status_code_matches(self, mock_requests):
+        mock_requests.get.return_value.status_code = 200
+
+        url = "http://example.com"
+        expected_status_code = 200
+        monitor = MonitorSite(url=url, expected_status_code=expected_status_code)
+
+        output = monitor.check_status_code()
+
+        self.assertEqual(output, True)
+
+    @patch('monitor.requests')
+    def test_check_status_code_does_not_match(self, mock_requests):
+        mock_requests.get.return_value.status_code = 503
+
+        url = "http://example.com"
+        expected_status_code = 200
+        monitor = MonitorSite(url=url, expected_status_code=expected_status_code)
+
+        output = monitor.check_status_code()
+
+        self.assertEqual(output, False)
