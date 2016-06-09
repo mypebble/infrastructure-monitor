@@ -8,12 +8,16 @@ from slacker import Slacker
 
 
 class Slack:
-    slack_api_token = 'xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2'  # The bots token
+    # The bots token TODO - Take out of config
+    slack_api_token = 'xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2'
     slack_username = "@systems.monitor"
-    slack_channel = '@sam.brennan'  # This would probably be the status channel
+    # TODO - set to the status channel
+    slack_channel = '@sam.brennan'
     slack_emote = ':scream:'
+    slack_shoutout = '@devs'
 
-    slack_text_prefix = 'System Error @sam.brennan: '
+    # TODO - switch over to slack_shoutout
+    slack_text_prefix = 'System Error {shoutout}: '.format(shoutout=slack_channel)
 
     slack = Slacker(slack_api_token)
 
