@@ -12,11 +12,22 @@ class MonitorSite:
         self.expected_status_code = expected_status_code
         self.status_code = self.get_status_code()
 
+    def get_status_code(self):
+        return requests.get(url=self.url).status_code
+
     def check_status_code(self):
         if self.expected_status_code == self.status_code:
             return True
         else:
             return False
 
-    def get_status_code(self):
-        return requests.get(url=self.url).status_code
+
+def main():
+    monitor_site = MonitorSite()
+    print('URL: {}'.format(monitor_site.url))
+    print('Expected Status Code: {}'.format(monitor_site.expected_status_code))
+    print('Status Code: {}'.format(monitor_site.status_code))
+    print('Status Code Matches Expected: {}'.format(monitor_site.check_status_code()))
+
+if __name__ == '__main__':
+    main()

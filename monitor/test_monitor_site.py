@@ -2,7 +2,7 @@ import unittest
 
 from mock import patch
 
-from monitor import MonitorSite
+from monitor_site import MonitorSite
 
 
 class TestMonitor(unittest.TestCase):
@@ -45,3 +45,5 @@ class TestMonitor(unittest.TestCase):
         output = monitor.check_status_code()
 
         self.assertEqual(output, False)
+
+    def
