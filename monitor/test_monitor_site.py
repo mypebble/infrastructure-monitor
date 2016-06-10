@@ -7,7 +7,7 @@ from monitor_site import MonitorSite
 
 class TestMonitor(unittest.TestCase):
 
-    @patch('monitor.requests')
+    @patch('monitor_site.requests')
     def test_get_200_ok_status_code(self, mock_requests):
         """This checks that the function returns the 200 status code
          when a GET request to a valid url is sent
@@ -22,7 +22,7 @@ class TestMonitor(unittest.TestCase):
 
         self.assertEqual(expected_status_code, status_code)
 
-    @patch('monitor.requests')
+    @patch('monitor_site.requests')
     def test_check_status_code_matches(self, mock_requests):
         """Checks that the status code from the GET request matches the
         expected status code
@@ -37,7 +37,7 @@ class TestMonitor(unittest.TestCase):
 
         self.assertEqual(True, output)
 
-    @patch('monitor.requests')
+    @patch('monitor_site.requests')
     def test_check_status_code_does_not_match(self, mock_requests):
         mock_requests.get.return_value.status_code = 503
 
