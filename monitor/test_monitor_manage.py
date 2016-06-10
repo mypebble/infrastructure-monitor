@@ -34,7 +34,7 @@ class TestParseConfig(unittest.TestCase):
         monitor_manager = MonitorManager()
 
         sites = monitor_manager.sites
-        
+
         for site in sites:
             self.assertTrue(isinstance(site, Site))
 
@@ -53,7 +53,6 @@ class TestParseConfig(unittest.TestCase):
         monitor_manager = MonitorManager()
 
         sites = monitor_manager.sites
-        print mock_get_yaml_config()
 
         for site in sites:
             self.assertTrue(isinstance(site, Site))

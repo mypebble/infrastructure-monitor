@@ -20,7 +20,7 @@ class TestMonitor(unittest.TestCase):
 
         status_code = monitor.get_status_code()
 
-        self.assertEqual(status_code, expected_status_code)
+        self.assertEqual(expected_status_code, status_code)
 
     @patch('monitor.requests')
     def test_check_status_code_matches(self, mock_requests):
@@ -35,7 +35,7 @@ class TestMonitor(unittest.TestCase):
 
         output = monitor.check_status_code()
 
-        self.assertEqual(output, True)
+        self.assertEqual(True, output)
 
     @patch('monitor.requests')
     def test_check_status_code_does_not_match(self, mock_requests):
@@ -47,4 +47,4 @@ class TestMonitor(unittest.TestCase):
 
         output = monitor.check_status_code()
 
-        self.assertEqual(output, False)
+        self.assertEqual(False, output)
