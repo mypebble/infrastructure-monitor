@@ -7,29 +7,26 @@ Sends a message to Slack if there are any issues detected.
 import yaml
 
 
-class MonitorManager:
-    sites = []
+def get_yaml_config():
+    config_file = "config.yaml"
+    try:
+        with open(config_file, 'r') as yaml_file:
+            return yaml.load(yaml_file)
+    except IOError:
+        return None
 
+
+class MonitorManager:
     def __init__(self):
+        self.sites = []
         self.parse_config()
 
     def parse_config(self):
-        config = self.get_yaml_config()
-
+        config = get_yaml_config()
         if config:
             for site in config['sites']:
                 _site = Site(url=site['url'], expected_status_code=site['status_code'])
-
                 self.sites.append(_site)
-
-    @staticmethod
-    def get_yaml_config():
-        config_file = "config.yaml"
-        try:
-            with open(config_file, 'r') as yamlfile:
-                return yaml.load(yamlfile)
-        except:
-            return None
 
 
 class Site:
