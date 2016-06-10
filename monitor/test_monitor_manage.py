@@ -3,7 +3,7 @@ import yaml
 
 from mock import patch
 
-from monitor_manager import MonitorManager, Site
+from monitor.monitor_manager import MonitorManager, Site
 
 
 class TestParseConfig(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestParseConfig(unittest.TestCase):
                    "- url: example.com\n" \
                    "  status_code: 302\n"
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_from_config(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
@@ -55,7 +55,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual('example.co.uk', sites[1].url)
         self.assertEqual(302, sites[1].expected_status_code)
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_from_config_reverse_input(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
@@ -74,7 +74,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual('example.com', sites[1].url)
         self.assertEqual(302, sites[1].expected_status_code)
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_from_config_with_only_domains(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
@@ -86,7 +86,7 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual([], sites)
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_from_blank_config(self, mock_get_yaml_config):
         """Attempts to read from an empty config file
         """
@@ -97,7 +97,7 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual([], sites)
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_from_config(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
@@ -112,7 +112,7 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual(domains[0], '8.8.8.8')
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_from_config_reverse_input(self, mock_get_yaml_config):
         # Using yaml_config2
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config2)
@@ -125,7 +125,7 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual('8.8.8.8', domains[0])
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_from_config_with_only_sites(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
@@ -137,7 +137,7 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual([], domains)
 
-    @patch('monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_from_blank_config(self, mock_get_yaml_config):
         """Attempts to read from an empty config file
         """
