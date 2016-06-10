@@ -4,17 +4,6 @@
 # C extensions
 *.so
 
-# Custom dev
-sfm/local_settings.py
-wingdbstub.py
-sfm/custom_wsgi.py*
-wkhtmltopdf
-
-# Static
-sfm/static/dinner-register
-sfm/user_portal/static/*
-*/collected-static/*
-
 # Packages
 *.egg
 *.egg-info
