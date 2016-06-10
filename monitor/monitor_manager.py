@@ -19,14 +19,20 @@ def get_yaml_config():
 class MonitorManager:
     def __init__(self):
         self.sites = []
+        self.domains = []
         self.parse_config()
 
     def parse_config(self):
         config = get_yaml_config()
         if config:
-            for site in config['sites']:
-                _site = Site(url=site['url'], expected_status_code=site['status_code'])
-                self.sites.append(_site)
+            if 'sites' in config:
+                for site in config['sites']:
+                    _site = Site(url=site['url'], expected_status_code=site['status_code'])
+                    self.sites.append(_site)
+
+            if 'domains' in config:
+                for domain in config['domains']:
+                    self.domains.append(domain['url'])
 
 
 class Site:
