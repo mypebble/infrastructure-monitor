@@ -3,24 +3,26 @@
 
 Sends a message to Slack if there are any issues detected.
 """
-
 import yaml
 
 
-def get_yaml_config():
-    config_file = "config.yaml"
+def get_yaml_config(config_file="config.yaml"):
     try:
         with open(config_file, 'r') as yaml_file:
             return yaml.load(yaml_file)
     except IOError:
-        return None
+        raise NoConfigFound
+
+
+class NoConfigFound(Exception):
+    def __init__(self):
+        Exception.__init__(self, "No config file has been found")
 
 
 class MonitorManager:
     def __init__(self):
         self.sites = []
         self.domains = []
-        self.parse_config()
 
     def parse_config(self):
         config = get_yaml_config()

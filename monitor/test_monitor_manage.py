@@ -4,7 +4,6 @@ import yaml
 from mock import patch
 
 from monitor.monitor_manager import MonitorManager, Site, NoConfigFound
-from slack.slack import Slack
 
 
 class TestParseConfig(unittest.TestCase):

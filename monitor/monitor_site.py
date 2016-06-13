@@ -1,19 +1,15 @@
 #!/usr/bin/env python
-"""Used to monitor the status of a website.
-"""
-
 import requests
 
 
 class MonitorSite:
-    url = None
-    expected_status_code = None
-    status_code = None
-
-    def __init__(self, url="http://example.com", expected_status_code=200):
+    """Class for monitoring the status of a website and checking it against an
+     expected status.
+    """
+    def __init__(self, url, expected_status_code=200):
+        self.status_code = None
         self.url = url
         self.expected_status_code = expected_status_code
-        self.status_code = self.get_status_code()
 
     def get_status_code(self):
         if self.status_code:
