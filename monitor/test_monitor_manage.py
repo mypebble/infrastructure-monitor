@@ -171,7 +171,7 @@ class TestParseConfig(unittest.TestCase):
 
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('slack.slack.Slack.post_message')
-    def test_expected_status_code(self, mock_slack_post_message, mock_get_yaml_config):
+    def test_status_code_expected(self, mock_slack_post_message, mock_get_yaml_config):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
         """
@@ -184,7 +184,7 @@ class TestParseConfig(unittest.TestCase):
 
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('slack.slack.Slack.post_message')
-    def test_unexpected_status_code(self, mock_slack_post_message, mock_get_yaml_config):
+    def test_status_code_unexpected(self, mock_slack_post_message, mock_get_yaml_config):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
