@@ -196,28 +196,36 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, manager.parse_config())
 
-    @patch('monitor.monitor_manager.get_yaml_config')
     @patch('slack.slack.Slack.post_message')
-    def test_status_code_expected(self, mock_slack_post_message, mock_get_yaml_config):
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.requests')
+    def test_status_code_expected(self, mock_requests, mock_get_yaml_config,
+                                  mock_slack_post_message):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
         """
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config_single_site)
         manager = MonitorManager()
         manager.parse_config()
+        response_status_code = manager.sites[0].expected_status_code
+        mock_requests.get.return_value.status_code = response_status_code
         manager.check_sites()
 
         mock_slack_post_message.assert_not_called()
 
-    @patch('monitor.monitor_manager.get_yaml_config')
     @patch('slack.slack.Slack.post_message')
-    def test_status_code_unexpected(self, mock_slack_post_message, mock_get_yaml_config):
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.requests')
+    def test_status_code_unexpected(self, mock_requests, mock_get_yaml_config,
+                                    mock_slack_post_message):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config_single_site)
         manager = MonitorManager()
         manager.parse_config()
+        response_status_code = manager.sites[0].expected_status_code + 1
+        mock_requests.get.return_value.status_code = response_status_code
         manager.check_sites()
 
         mock_slack_post_message.assert_called_once()
