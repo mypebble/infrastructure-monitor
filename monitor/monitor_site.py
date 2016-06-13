@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import re
-import requests
+from requests import get
+from requests.exceptions import MissingSchema
 
 
 class MonitorSite:
@@ -9,12 +9,7 @@ class MonitorSite:
     """
     def __init__(self, url, expected_status_code=200):
         self.status_code = None
-
-        if re.match('(?:http|https)://', url):
-            self.url = url
-        else:
-            self.url = "http://{url}".format(url=url)
-
+        self.url = url
         self.expected_status_code = expected_status_code
 
     def __str__(self):
@@ -26,10 +21,13 @@ class MonitorSite:
         return self.__str__()
 
     def get_status_code(self):
-        if self.status_code:
-            return self.status_code
-        else:
-            self.status_code = requests.get(url=self.url).status_code
+        if not self.status_code:
+            try:
+                self.status_code = get(url=self.url).status_code
+            except MissingSchema:
+                pass
+
+        return self.status_code
 
     def check_status_code(self):
         if not self.status_code:
@@ -52,11 +50,11 @@ class MonitorSite:
 
 
 def main():
-    monitor_site = MonitorSite()
+    monitor_site = MonitorSite("http://example.com")
 
     print('URL: {}'.format(monitor_site.url))
     print('Expected Status Code: {}'.format(monitor_site.expected_status_code))
-    print('Status Code: {}'.format(monitor_site.status_code))
+    print('Status Code: {}'.format(monitor_site.get_status_code()))
     print('Status Code Matches Expected: {}'.format(monitor_site.check_status_code()))
 
 if __name__ == '__main__':

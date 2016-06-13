@@ -14,13 +14,15 @@ from slack.slack import Slack
 def get_yaml_config(config_file="config.yaml"):
     try:
         with open(config_file, 'r') as yaml_file:
-            return load(yaml_file)
+            yaml = load(yaml_file)
     except IOError:
         raise NoConfigFound
     except ComposerError:
         raise MalformedConfig
     except ScannerError:
         raise MalformedConfig
+
+    return yaml
 
 
 class MalformedConfig(Exception):
@@ -41,7 +43,13 @@ class MonitorManager:
         self.config = None
 
     def set_config(self, config_file="config.yaml"):
-        self.config = get_yaml_config(config_file)
+        try:
+            self.config = get_yaml_config(config_file)
+        except NoConfigFound:
+            Slack.post_message("No config file has been found. "
+                               "Please ensure you have a config.yaml file.")
+        except MalformedConfig:
+            pass
 
     def parse_config(self):
         if not self.config:
@@ -50,8 +58,8 @@ class MonitorManager:
         if self.config:
             if 'sites' in self.config:
                 for site in self.config['sites']:
-                    _site = MonitorSite(url=site['url'],
-                                        expected_status_code=site['status_code'])
+                    _site = MonitorSite(site['url'],
+                                        site['status_code'])
                     self.sites.append(_site)
 
             if 'domains' in self.config:
@@ -62,10 +70,9 @@ class MonitorManager:
         error_counter = 0
 
         if len(self.sites) > 0:
-            slack = Slack()
             for site in self.sites:
                 if not site.check_status_code():
-                    slack.post_message(site.create_slack_message())
+                    Slack.post_message(site.create_slack_message())
                     error_counter += 1
 
         return error_counter
