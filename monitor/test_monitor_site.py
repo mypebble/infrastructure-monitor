@@ -19,8 +19,9 @@ class TestMonitor(unittest.TestCase):
         monitor = MonitorSite(url=url, expected_status_code=expected_status_code)
         monitor.get_status_code()
 
-        status_code = monitor.status_code
-        self.assertEqual(expected_status_code, status_code)
+        self.assertEqual(url, monitor.url)
+        self.assertEqual(expected_status_code, monitor.expected_status_code)
+        self.assertEqual(expected_status_code, monitor.status_code)
 
 
     @patch('monitor.monitor_site.requests')
@@ -72,3 +73,13 @@ class TestMonitor(unittest.TestCase):
 
         status_code = monitor.status_code
         self.assertEqual(expected_status_code, status_code)
+
+    def test_protocol_is_added_if_missing(self):
+        url_missing_protocol = "example.com"
+        url_with_protocol = "http://example.com"
+        expected_status_code = 200
+
+        monitor = MonitorSite(url=url_missing_protocol,
+                              expected_status_code=expected_status_code)
+
+        self.assertEqual(url_with_protocol, monitor.url)
