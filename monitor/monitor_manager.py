@@ -12,8 +12,15 @@ from slack.slack import Slack
 
 
 def get_yaml_config(config_file="config.yaml"):
-    with open(config_file, 'r') as yaml_file:
-        return load(yaml_file)
+    try:
+        with open(config_file, 'r') as yaml_file:
+            return load(yaml_file)
+    except IOError:
+        raise NoConfigFound
+    except ComposerError:
+        raise MalformedConfig
+    except ScannerError:
+        raise MalformedConfig
 
 
 class MalformedConfig(Exception):
@@ -34,16 +41,7 @@ class MonitorManager:
         self.config = None
 
     def set_config(self, config_file="config.yaml"):
-        try:
-            self.config = get_yaml_config(config_file)
-            aaa = ""
-            type(aaa)
-        except IOError:
-            raise NoConfigFound
-        except ComposerError:
-            raise MalformedConfig
-        except ScannerError:
-            raise MalformedConfig
+        self.config = get_yaml_config(config_file)
 
     def parse_config(self):
         if not self.config:

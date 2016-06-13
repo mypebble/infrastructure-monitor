@@ -151,12 +151,13 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual([], domains)
 
+    @patch('monitor.monitor_manager.get_yaml_config')
     @patch('yaml.load')
-    def test_read_from_blank_config(self, mock_load):
+    def test_read_from_blank_config(self, mock_load, mock_get_yaml_config):
         """Attempts to read from an empty config file
         """
         try:
-            yaml.load("")
+            mock_get_yaml_config = yaml.load("")
         except IOError as e:
             mock_load.side_effect = e
 
