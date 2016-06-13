@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import re
 import requests
 
 
@@ -8,7 +9,12 @@ class MonitorSite:
     """
     def __init__(self, url, expected_status_code=200):
         self.status_code = None
-        self.url = url
+
+        if re.match('(?:http|https)://', url):
+            self.url = url
+        else:
+            self.url = "http://{url}".format(url=url)
+
         self.expected_status_code = expected_status_code
 
     def __str__(self):
