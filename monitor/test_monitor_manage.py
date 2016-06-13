@@ -3,7 +3,8 @@ import yaml
 
 from mock import patch
 
-from monitor.monitor_manager import MonitorManager, Site, NoConfigFound
+from monitor.monitor_manager import MonitorManager, NoConfigFound
+from monitor.monitor_site import MonitorSite
 
 
 class TestParseConfig(unittest.TestCase):
@@ -53,7 +54,7 @@ class TestParseConfig(unittest.TestCase):
         sites = monitor_manager.sites
 
         for site in sites:
-            self.assertTrue(isinstance(site, Site))
+            self.assertTrue(isinstance(site, MonitorSite))
 
         self.assertEqual('example.uk', sites[0].url)
         self.assertEqual(200, sites[0].expected_status_code)
@@ -73,7 +74,7 @@ class TestParseConfig(unittest.TestCase):
         sites = monitor_manager.sites
 
         for site in sites:
-            self.assertTrue(isinstance(site, Site))
+            self.assertTrue(isinstance(site, MonitorSite))
 
         self.assertEqual('example.fr', sites[0].url)
         self.assertEqual(200, sites[0].expected_status_code)
