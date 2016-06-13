@@ -15,13 +15,26 @@ class MonitorSite:
         if self.status_code:
             return self.status_code
         else:
-            return requests.get(url=self.url).status_code
+            self.status_code = requests.get(url=self.url).status_code
 
     def check_status_code(self):
+        if not self.status_code:
+            self.get_status_code()
+
         if self.expected_status_code == self.status_code:
             return True
         else:
             return False
+
+    def create_slack_message(self):
+        message = ("Error at {url}. Expected status code expected: {expected}"
+                   " | Actual status code: {actual}"
+                   .format(url=self.url,
+                           expected=self.expected_status_code,
+                           actual=self.status_code)
+                   )
+
+        return message
 
 
 def main():
