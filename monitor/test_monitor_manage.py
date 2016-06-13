@@ -158,13 +158,12 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual([], domains)
 
-    @patch('monitor.monitor_manager.get_yaml_config')
     @patch('yaml.load')
-    def test_read_from_blank_config(self, mock_load, mock_get_yaml_config):
+    def test_read_from_blank_config(self, mock_load):
         """Attempts to read from an empty config file
         """
         try:
-            mock_get_yaml_config = yaml.load("")
+            yaml.load("")
         except IOError as e:
             mock_load.side_effect = e
 
@@ -208,7 +207,7 @@ class TestParseConfig(unittest.TestCase):
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.requests')
     def test_status_code_expected_single(self, mock_requests, mock_get_yaml_config,
-                                  mock_slack_post_message):
+                                         mock_slack_post_message):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
         """
@@ -225,7 +224,7 @@ class TestParseConfig(unittest.TestCase):
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.requests')
     def test_status_code_unexpected_single(self, mock_requests, mock_get_yaml_config,
-                                    mock_slack_post_message):
+                                           mock_slack_post_message):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
@@ -262,7 +261,7 @@ class TestParseConfig(unittest.TestCase):
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.requests')
     def test_status_codes_unexpected_multiple(self, mock_requests, mock_get_yaml_config,
-                                    mock_slack_post_message):
+                                              mock_slack_post_message):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
