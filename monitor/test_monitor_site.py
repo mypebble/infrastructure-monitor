@@ -83,3 +83,22 @@ class TestMonitor(unittest.TestCase):
                               expected_status_code=expected_status_code)
 
         self.assertEqual(url_with_protocol, monitor.url)
+
+    def test_protocol_is_not_added_if_there(self):
+        url_missing_protocol = "http://example.com"
+        url_with_protocol = "http://example.com"
+        expected_status_code = 200
+
+        monitor = MonitorSite(url=url_missing_protocol,
+                              expected_status_code=expected_status_code)
+
+        self.assertEqual(url_with_protocol, monitor.url)
+
+        url_missing_protocol = "https://example.com"
+        url_with_protocol = "https://example.com"
+        expected_status_code = 200
+
+        monitor = MonitorSite(url=url_missing_protocol,
+                              expected_status_code=expected_status_code)
+
+        self.assertEqual(url_with_protocol, monitor.url)
