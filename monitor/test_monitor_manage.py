@@ -47,6 +47,13 @@ class TestParseConfig(unittest.TestCase):
                                "- url: example.com\n"
                                "  status_code: 200")
 
+    yaml_config_multiple_sites = ("---\n"
+                                  "sites:\n"
+                                  "- url: example.com\n"
+                                  "  status_code: 200\n"
+                                  "- url: example.org\n"
+                                  "  status_code: 200")
+
     yaml_config_malformed = ("---"
                              "sites:"
                              "- url: example.com"
@@ -200,7 +207,7 @@ class TestParseConfig(unittest.TestCase):
     @patch('slack.slack.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.requests')
-    def test_status_code_expected(self, mock_requests, mock_get_yaml_config,
+    def test_status_code_expected_single(self, mock_requests, mock_get_yaml_config,
                                   mock_slack_post_message):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
@@ -217,7 +224,7 @@ class TestParseConfig(unittest.TestCase):
     @patch('slack.slack.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.requests')
-    def test_status_code_unexpected(self, mock_requests, mock_get_yaml_config,
+    def test_status_code_unexpected_single(self, mock_requests, mock_get_yaml_config,
                                     mock_slack_post_message):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
@@ -230,6 +237,43 @@ class TestParseConfig(unittest.TestCase):
         manager.check_sites()
 
         mock_slack_post_message.assert_called_once()
+
+    @patch('slack.slack.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.requests')
+    def test_status_codes_expected_multiple(self, mock_requests, mock_get_yaml_config,
+                                  mock_slack_post_message):
+        """Test monitor manager doesn't send a message if the response status
+        code matches the expected status code.
+        """
+        mock_get_yaml_config.return_value = yaml.load(self.yaml_config_multiple_sites)
+        manager = MonitorManager()
+        manager.parse_config()
+        response_status_code = manager.sites[0].expected_status_code
+        mock_requests.get.return_value.status_code = response_status_code
+        response_status_code = manager.sites[1].expected_status_code
+        mock_requests.get.return_value.status_code = response_status_code
+
+        manager.check_sites()
+
+        mock_slack_post_message.assert_not_called()
+
+    @patch('slack.slack.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.requests')
+    def test_status_codes_unexpected_multiple(self, mock_requests, mock_get_yaml_config,
+                                    mock_slack_post_message):
+        """Test monitor manager sends a message if the response status
+        code does not match the expected status code.
+        """
+        mock_get_yaml_config.return_value = yaml.load(self.yaml_config_multiple_sites)
+        manager = MonitorManager()
+        manager.parse_config()
+        response_status_code = manager.sites[0].expected_status_code + 1
+        mock_requests.get.return_value.status_code = response_status_code
+        manager.check_sites()
+
+        self.assertEqual(2, mock_slack_post_message.call_count)
 
 
 if __name__ == '__main__':
