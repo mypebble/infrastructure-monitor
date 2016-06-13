@@ -3,7 +3,8 @@ import yaml
 
 from mock import patch
 
-from monitor.monitor_manager import MonitorManager, Site
+from monitor.monitor_manager import MonitorManager, Site, NoConfigFound
+from slack.slack import Slack
 
 
 class TestParseConfig(unittest.TestCase):
@@ -36,6 +37,11 @@ class TestParseConfig(unittest.TestCase):
                    "- url: example.com\n" \
                    "  status_code: 302\n"
 
+    yaml_config_single_site = "---\n" \
+                              "sites:\n" \
+                              "- url: example.com" \
+                              "  status_code: 200"
+
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_from_config(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
@@ -43,6 +49,7 @@ class TestParseConfig(unittest.TestCase):
         # Using yaml_config
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config)
         monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
 
         sites = monitor_manager.sites
 
@@ -62,6 +69,7 @@ class TestParseConfig(unittest.TestCase):
         # Using yaml_config2
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config2)
         monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
 
         sites = monitor_manager.sites
 
@@ -81,6 +89,7 @@ class TestParseConfig(unittest.TestCase):
         # Using yaml_config
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config3)
         monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
 
         sites = monitor_manager.sites
 
@@ -88,13 +97,18 @@ class TestParseConfig(unittest.TestCase):
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_from_blank_config(self, mock_get_yaml_config):
-        """Attempts to read from an empty config file
+        """Attempts to read from an empty config file. NoConfigFound
+        exception should be thrown.
         """
         mock_get_yaml_config.return_value = yaml.load("")
         monitor_manager = MonitorManager()
 
         sites = monitor_manager.sites
+        self.assertEqual([], sites)
 
+        self.assertRaises(NoConfigFound, monitor_manager.parse_config())
+
+        sites = monitor_manager.sites
         self.assertEqual([], sites)
 
     @patch('monitor.monitor_manager.get_yaml_config')
@@ -104,6 +118,7 @@ class TestParseConfig(unittest.TestCase):
         # Using yaml_config
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config)
         monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
 
         domains = monitor_manager.domains
 
@@ -117,6 +132,7 @@ class TestParseConfig(unittest.TestCase):
         # Using yaml_config2
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config2)
         monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
 
         domains = monitor_manager.domains
 
@@ -132,6 +148,7 @@ class TestParseConfig(unittest.TestCase):
         # Using yaml_config
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config4)
         monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
 
         domains = monitor_manager.domains
 
@@ -145,8 +162,39 @@ class TestParseConfig(unittest.TestCase):
         monitor_manager = MonitorManager()
 
         domains = monitor_manager.domains
-
         self.assertEqual([], domains)
+
+        self.assertRaises(NoConfigFound, monitor_manager.parse_config())
+
+        domains = monitor_manager.domains
+        self.assertEqual([], domains)
+
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('slack.slack.Slack.post_message')
+    def test_expected_status_code(self, mock_slack_post_message, mock_get_yaml_config):
+        """Test monitor manager doesn't send a message if the response status
+        code matches the expected status code.
+        """
+        mock_get_yaml_config.return_value = yaml.load("")
+        monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
+        monitor_manager.check_sites()
+
+        mock_slack_post_message.assert_not_called()
+
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('slack.slack.Slack.post_message')
+    def test_unexpected_status_code(self, mock_slack_post_message, mock_get_yaml_config):
+        """Test monitor manager sends a message if the response status
+        code does not match the expected status code.
+        """
+        mock_get_yaml_config.return_value = yaml.load("")
+        monitor_manager = MonitorManager()
+        monitor_manager.parse_config()
+        monitor_manager.check_sites()
+
+        mock_slack_post_message.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
