@@ -192,7 +192,7 @@ class TestParseConfig(unittest.TestCase):
         monitor_manager.parse_config()
         monitor_manager.check_sites()
 
-        mock_slack_post_message.assert_not_called()
+        mock_slack_post_message.assert_called_once()
 
 
 if __name__ == '__main__':
