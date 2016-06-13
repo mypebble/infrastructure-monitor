@@ -12,12 +12,12 @@ class Slack:
     slack_api_token = 'xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2'
     slack_username = "@systems.monitor"
     # TODO - set to the status channel
-    slack_channel = '@sam.brennan'
+    slack_channel = '@sam.brennan'  # '@dan.wakenshaw' '@joe.simpson
     slack_emote = ':scream:'
     slack_shoutout = '@devs'
 
-    # TODO - switch over to slack_shoutout
-    slack_text_prefix = 'System Error {shoutout}: '.format(shoutout=slack_channel)
+    # TODO - switch over to slack_shoutout, remove 'this is a test'
+    slack_text_prefix = 'This is a test! System Error {shoutout}: '.format(shoutout=slack_channel)
 
     slack = Slacker(slack_api_token)
 

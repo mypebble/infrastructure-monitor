@@ -1,8 +1,8 @@
 ---
 sites:
-- url: example.com
+- url: http://example.com
   status_code: 200
-- url: example.co.uk
+- url: http://example.co.uk
   status_code: 302
 domains:
 - url: 8.8.8.8

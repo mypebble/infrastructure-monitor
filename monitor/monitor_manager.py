@@ -71,23 +71,11 @@ class MonitorManager:
         return error_counter
 
 
-class Site:
-    def __init__(self, url, expected_status_code):
-        self.url = url
-        self.expected_status_code = expected_status_code
-
-    def __str__(self):
-        return "(URL: {url}, Expected Status Code: {status_code})"\
-            .format(url=self.url,
-                    status_code=self.expected_status_code)
-
-    def __repr__(self):
-        return self.__str__()
-
-
 def main():
-    monitor_manager = MonitorManager()
-    print(monitor_manager.sites)
+    manager = MonitorManager()
+    manager.parse_config()
+    print(manager.sites)
+    manager.check_sites()
 
 if __name__ == '__main__':
     main()

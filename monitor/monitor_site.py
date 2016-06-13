@@ -11,6 +11,14 @@ class MonitorSite:
         self.url = url
         self.expected_status_code = expected_status_code
 
+    def __str__(self):
+            return "(URL: {url}, Expected Status Code: {status_code})" \
+                .format(url=self.url,
+                        status_code=self.expected_status_code)
+
+    def __repr__(self):
+        return self.__str__()
+
     def get_status_code(self):
         if self.status_code:
             return self.status_code
