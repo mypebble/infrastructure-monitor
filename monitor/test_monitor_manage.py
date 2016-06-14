@@ -4,7 +4,7 @@ import yaml
 from yaml.composer import ComposerError
 from yaml.scanner import ScannerError
 
-from mock import patch, Mock, MagicMock
+from mock import patch
 
 from monitor.monitor_manager import (MonitorManager, MalformedConfig,
                                      NoConfigFound, get_yaml_config)
@@ -13,54 +13,62 @@ from monitor.monitor_site import MonitorSite
 
 
 class TestParseConfig(unittest.TestCase):
-    yaml_config = ("---\n"
-                   "sites:\n"
-                   "- url: example.uk\n"
-                   "  status_code: 200\n"
-                   "- url: example.co.uk\n"
-                   "  status_code: 302\n"
-                   "domains:\n"
-                   "- url: 8.8.8.8\n")
+    yaml_config = (
+        "---\n"
+        "sites:\n"
+        "- url: example.uk\n"
+        "  status_code: 200\n"
+        "- url: example.co.uk\n"
+        "  status_code: 302\n"
+        "domains:\n"
+        "- url: 8.8.8.8\n")
 
-    yaml_config2 = ("---\n"
-                    "domains:\n"
-                    "- url: 8.8.8.8\n"
-                    "sites:\n"
-                    "- url: example.fr\n"
-                    "  status_code: 200\n"
-                    "- url: example.com\n"
-                    "  status_code: 302\n")
+    yaml_config2 = (
+        "---\n"
+        "domains:\n"
+        "- url: 8.8.8.8\n"
+        "sites:\n"
+        "- url: example.fr\n"
+        "  status_code: 200\n"
+        "- url: example.com\n"
+        "  status_code: 302\n")
 
-    yaml_config3 = ("---\n"
-                    "domains:\n"
-                    "- url: 8.8.8.8\n")
+    yaml_config3 = (
+        "---\n"
+        "domains:\n"
+        "- url: 8.8.8.8\n")
 
-    yaml_config4 = ("---\n"
-                    "sites:\n"
-                    "- url: example.fr\n"
-                    "  status_code: 200\n"
-                    "- url: example.com\n"
-                    "  status_code: 302\n")
+    yaml_config4 = (
+        "---\n"
+        "sites:\n"
+        "- url: example.fr\n"
+        "  status_code: 200\n"
+        "- url: example.com\n"
+        "  status_code: 302\n")
 
-    yaml_config_single_site = ("---\n"
-                               "sites:\n"
-                               "- url: example.com\n"
-                               "  status_code: 200")
+    yaml_config_single_site = (
+        "---\n"
+        "sites:\n"
+        "- url: example.com\n"
+        "  status_code: 200\n")
 
-    yaml_config_multiple_sites = ("---\n"
-                                  "sites:\n"
-                                  "- url: example.com\n"
-                                  "  status_code: 200\n"
-                                  "- url: example.org\n"
-                                  "  status_code: 200")
+    yaml_config_multiple_sites = (
+        "---\n"
+        "sites:\n"
+        "- url: example.com\n"
+        "  status_code: 200\n"
+        "- url: example.org\n"
+        "  status_code: 200\n")
 
-    yaml_config_malformed = ("aaaaaa\n"
-                             "--- bbbbb")
+    yaml_config_malformed = (
+        "aaaaaa\n"
+        "--- bbbbb\n")
 
-    yaml_config_malformed2 = ("---"
-                              "sites:"
-                              "- url: example.com"
-                              "  status_code: 200")
+    yaml_config_malformed2 = (
+        "---"
+        "sites:"
+        "- url: example.com"
+        "  status_code: 200\n")
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_config(self, mock_get_yaml_config):
@@ -206,10 +214,8 @@ class TestParseConfig(unittest.TestCase):
     @patch('slack.slack.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
-    def test_status_code_unexpected_single(self,
-                                           mock_requests,
-                                           mock_get_yaml_config,
-                                           mock_slack_post_message):
+    def test_status_code_unexpected_single(self, mock_requests,
+            mock_get_yaml_config, mock_slack_post_message):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
@@ -222,6 +228,10 @@ class TestParseConfig(unittest.TestCase):
         manager.check_sites()
 
         mock_slack_post_message.assert_called_once()
+
+    def test_status_code_unexpected_single(self, mock_requests,
+                                           mock_get_yaml_config,
+                                           mock_slack_post_message):
 
     @patch('slack.slack.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')

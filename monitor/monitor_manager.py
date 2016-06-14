@@ -25,9 +25,9 @@ def get_yaml_config(config_file="config.yaml"):
 
 class MalformedConfig(Exception):
     def __init__(self):
-        super(MalformedConfig,
-              self).__init__("A malformed config file has been found. Please "
-                             "check the formatting of your config.yaml file.")
+        super(MalformedConfig, self).__init__(
+            "A malformed config file has been found. Please check the "
+            "formatting of your config.yaml file.")
 
 
 class NoConfigFound(Exception):
