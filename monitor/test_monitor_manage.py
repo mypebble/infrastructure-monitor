@@ -171,8 +171,6 @@ class TestParseConfig(unittest.TestCase):
         manager.parse_config()
         manager.check_sites()
 
-        mock_slack.assert_called_once()
-
         # Called twice because yaml_config4 has two sites in it
         self.assertEqual(2, mock_slack.call_count)
 
@@ -183,8 +181,9 @@ class TestParseConfig(unittest.TestCase):
         manager.parse_config()
         manager.check_sites()
 
-        # Called four times because yaml_config5 has four sites in it
-        self.assertEqual(4, mock_slack.call_count)
+        # Called six times because yaml_config5 has four sites plus the
+        #   previous two
+        self.assertEqual(6, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
@@ -209,7 +208,7 @@ class TestParseConfig(unittest.TestCase):
         manager.parse_config()
 
         self.assertEqual([], manager.sites)
-        self.assertEqual(1, mock_slack.call_count)
+        self.assertEqual(2, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_site_without_an_expected_status_code(self, mock_get_yaml_config):
@@ -304,7 +303,7 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
-    @patch('slack.slack.Slack.post_message')
+    @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
     def test_status_code_expected_single(self, mock_requests,
@@ -322,7 +321,7 @@ class TestParseConfig(unittest.TestCase):
 
         mock_slack_post_message.assert_not_called()
 
-    @patch('slack.slack.Slack.post_message')
+    @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
     def test_status_code_unexpected_single(self, mock_requests,
@@ -340,7 +339,7 @@ class TestParseConfig(unittest.TestCase):
 
         mock_slack_post_message.assert_called_once()
 
-    @patch('slack.slack.Slack.post_message')
+    @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
     def test_status_codes_expected_multiple(self,
@@ -363,7 +362,7 @@ class TestParseConfig(unittest.TestCase):
 
         mock_slack_post_message.assert_not_called()
 
-    @patch('slack.slack.Slack.post_message')
+    @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
     def test_status_codes_unexpected_multiple(self,

@@ -58,11 +58,23 @@ class MonitorManager:
 
         if self.config:
             for site in self.config.get('sites', []):
-                _site = MonitorSite(site['url'], site['status_code'])
-                self.sites.append(_site)
+                self.parse_sites(site)
 
             for domain in self.config.get('domains', []):
                 self.domains.append(domain['url'])
+
+    def parse_sites(self, site):
+        try:
+            if site['url']:
+                _site = MonitorSite(site['url'], site.get(
+                    'status_code', None))
+                self.sites.append(_site)
+            else:
+                raise KeyError("Rabbits")
+        except KeyError:
+            self.slack.post_message("KeyError: Check the url field in "
+                                    "your config.yaml, it appears to "
+                                    "be missing!")
 
     def check_sites(self):
         errors = []
