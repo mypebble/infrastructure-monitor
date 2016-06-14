@@ -27,7 +27,7 @@ sites:
 - url: http://example.org
   status_code: 302
 domains:
-- url: 8.8.8.8
+- main: 8.8.8.8
 ```
 
 ##### Sites
@@ -35,7 +35,7 @@ domains:
 - `status_code`: this is the status code which you expect the `url` to have
 
 ##### Domains
-- `url`: this is the ip address or url of the domain you would like to check
+- `main`: this is the ip address or url of the domain you would like to check
 
 ##### Config errors
 The following errors in the config will result in a message to Slack:

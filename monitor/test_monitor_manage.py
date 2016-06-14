@@ -23,12 +23,12 @@ class TestParseConfig(unittest.TestCase):
         "- url: example.co.uk\n"
         "  status_code: 302\n"
         "domains:\n"
-        "- url: 8.8.8.8\n")
+        "- domain: 8.8.8.8\n")
 
     yaml_config2 = (
         "---\n"
         "domains:\n"
-        "- url: 8.8.8.8\n"
+        "- domain: 8.8.8.8\n"
         "sites:\n"
         "- url: example.fr\n"
         "  status_code: 200\n"
@@ -38,7 +38,7 @@ class TestParseConfig(unittest.TestCase):
     yaml_config3 = (
         "---\n"
         "domains:\n"
-        "- url: 8.8.8.8\n")
+        "- domain: 8.8.8.8\n")
 
     yaml_config4 = (
         "---\n"
@@ -104,6 +104,12 @@ class TestParseConfig(unittest.TestCase):
         "---"
         "sites:"
         "- url: example.com"
+        "  status_code: 200\n")
+
+    yaml_config_malformed3 = (
+        "---"
+        "sites:"
+        "- url: http://example"
         "  status_code: 200\n")
 
     @patch('monitor.monitor_manager.get_yaml_config')

@@ -3,7 +3,7 @@
 
 Sends a message to Slack if there are any issues detected.
 """
-from requests.exceptions import MissingSchema
+from requests.exceptions import ConnectionError, MissingSchema
 
 from yaml import load
 from yaml.composer import ComposerError
@@ -41,9 +41,9 @@ class NoConfigFound(Exception):
 
 class MonitorManager:
     def __init__(self):
+        self.config = None
         self.sites = []
         self.domains = []
-        self.config = None
         self.slack = Slack()
 
     def set_config(self, config_file="config.yaml"):
@@ -61,7 +61,7 @@ class MonitorManager:
                 self.parse_sites(site)
 
             for domain in self.config.get('domains', []):
-                self.domains.append(domain['url'])
+                self.domains.append(domain['domain'])
 
     def parse_sites(self, site):
         try:
@@ -78,21 +78,31 @@ class MonitorManager:
 
     def check_sites(self):
         errors = []
+
         try:
             errors = [site.create_slack_message() for site in self.sites
                       if not site.check_status_code()]
-        except MissingSchema as e:
-            self.slack.post_message(e.message)
+        except (ConnectionError, MissingSchema) as e:
+            self.slack.post_message(str(e.message))
 
         for error in errors:
             self.slack.post_message(error)
 
         return len(errors)
 
+    def check_domains(self):
+        errors = []
+
+        try:
+            pass
+        except:
+            pass
+
 
 def main():
     manager = MonitorManager()
     manager.parse_config()
+    print(manager.sites)
     manager.check_sites()
 
 if __name__ == '__main__':
