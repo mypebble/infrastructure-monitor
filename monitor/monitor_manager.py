@@ -63,11 +63,8 @@ class MonitorManager:
                 self.domains.append(domain['url'])
 
     def check_sites(self):
-        errors = []
-
-        for site in self.sites:
-            if not site.check_status_code():
-                errors.append(site.create_slack_message())
+        errors = [site.create_slack_message() for site in self.sites
+                  if not self.check_status_code()]
 
         for error in errors:
             self.slack.post_message(error)

@@ -229,10 +229,6 @@ class TestParseConfig(unittest.TestCase):
 
         mock_slack_post_message.assert_called_once()
 
-    def test_status_code_unexpected_single(self, mock_requests,
-                                           mock_get_yaml_config,
-                                           mock_slack_post_message):
-
     @patch('slack.slack.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
