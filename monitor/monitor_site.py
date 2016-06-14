@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from requests import get
-from requests.exceptions import MissingSchema
 
 
 class MonitorSite:
@@ -18,14 +17,11 @@ class MonitorSite:
                 status_code=self.expected_status_code)
 
     def __repr__(self):
-        self.__unicode__().encode('utf-8')
+        return self.__unicode__().encode('utf-8')
 
     def get_status_code(self):
         if self.status_code is None:
-            try:
-                self.status_code = get(url=self.url).status_code
-            except MissingSchema:
-                pass
+            self.status_code = get(url=self.url).status_code
 
         return self.status_code
 

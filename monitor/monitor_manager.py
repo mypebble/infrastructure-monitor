@@ -3,6 +3,8 @@
 
 Sends a message to Slack if there are any issues detected.
 """
+from requests.exceptions import MissingSchema
+
 from yaml import load
 from yaml.composer import ComposerError
 from yaml.scanner import ScannerError
@@ -63,8 +65,12 @@ class MonitorManager:
                 self.domains.append(domain['url'])
 
     def check_sites(self):
-        errors = [site.create_slack_message() for site in self.sites
-                  if not site.check_status_code()]
+        errors = []
+        try:
+            errors = [site.create_slack_message() for site in self.sites
+                      if not site.check_status_code()]
+        except MissingSchema as e:
+            self.slack.post_message(e.message)
 
         for error in errors:
             self.slack.post_message(error)

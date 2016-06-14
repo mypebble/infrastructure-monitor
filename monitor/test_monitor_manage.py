@@ -4,6 +4,8 @@ import yaml
 from yaml.composer import ComposerError
 from yaml.scanner import ScannerError
 
+from requests.exceptions import MissingSchema
+
 from mock import patch
 
 from monitor.monitor_manager import (MonitorManager, MalformedConfig,
@@ -44,6 +46,18 @@ class TestParseConfig(unittest.TestCase):
         "- url: example.fr\n"
         "  status_code: 200\n"
         "- url: example.com\n"
+        "  status_code: 302\n")
+
+    yaml_config5 = (
+        "---\n"
+        "sites:\n"
+        "- url: example.fr\n"
+        "  status_code: 200\n"
+        "- url: example.com\n"
+        "  status_code: 302\n"
+        "- url: example.org\n"
+        "  status_code: 200\n"
+        "- url: example.co.uk\n"
         "  status_code: 302\n")
 
     yaml_config_single_site = (
@@ -122,6 +136,33 @@ class TestParseConfig(unittest.TestCase):
         sites = manager.sites
 
         self.assertEqual([], sites)
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_site.get')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_site_without_protocol(self, mock_get_yaml_config, mock_requests,
+                                   mock_slack):
+        # Part 1 with yaml_config4
+        mock_get_yaml_config.return_value = yaml.load(self.yaml_config4)
+        mock_requests.side_effects = MissingSchema
+        manager = MonitorManager()
+        manager.parse_config()
+        manager.check_sites()
+
+        mock_slack.assert_called_once()
+
+        # Called twice because yaml_config4 has two sites in it
+        self.assertEqual(2, mock_slack.call_count)
+
+        # Part 2 with yaml_config5
+        mock_get_yaml_config.return_value = yaml.load(self.yaml_config5)
+        mock_requests.side_effects = MissingSchema
+        manager = MonitorManager()
+        manager.parse_config()
+        manager.check_sites()
+
+        # Called four times because yaml_config5 has four sites in it
+        self.assertEqual(4, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_config(self, mock_get_yaml_config):
