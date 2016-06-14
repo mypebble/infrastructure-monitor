@@ -74,6 +74,28 @@ class TestParseConfig(unittest.TestCase):
         "- url: example.org\n"
         "  status_code: 200\n")
 
+    yaml_config_no_url = (
+        "---\n"
+        "sites:\n"
+        "- url: \n"
+        "  status_code: 200\n")
+
+    yaml_config_no_url2 = (
+        "---\n"
+        "sites:\n"
+        "- status_code: 200\n")
+
+    yaml_config_no_expected = (
+        "---\n"
+        "sites:\n"
+        "- url: example.com\n"
+        "  status_code: \n")
+
+    yaml_config_no_expected2 = (
+        "---\n"
+        "sites:\n"
+        "- url: example.com\n")
+
     yaml_config_malformed = (
         "aaaaaa\n"
         "--- bbbbb\n")
@@ -163,6 +185,54 @@ class TestParseConfig(unittest.TestCase):
 
         # Called four times because yaml_config5 has four sites in it
         self.assertEqual(4, mock_slack.call_count)
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_site_with_expected_code_without_url(self, mock_get_yaml_config,
+                                                 mock_slack):
+        """If there is no url in the config, but there is an expected code then
+        a slack alert should be sent to notify the config needs fixing.
+        """
+        # With status_code:
+        mock_get_yaml_config.return_value = yaml.load(self.yaml_config_no_url)
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        self.assertEqual([], manager.sites)
+        self.assertEqual(1, mock_slack.call_count)
+
+        # With url: missing completely
+        mock_get_yaml_config.return_value = yaml.load(self.yaml_config_no_url2)
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        self.assertEqual([], manager.sites)
+        self.assertEqual(1, mock_slack.call_count)
+
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_site_without_an_expected_status_code(self, mock_get_yaml_config):
+        """If there is no expected status code in the config but there is a
+        url, then 200 should be used as a default
+        """
+        # With status_code:
+        mock_get_yaml_config.return_value = yaml.load(
+            self.yaml_config_no_expected)
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        self.assertEqual(200, manager.sites[0].expected_status_code)
+
+        # With status_code: missing completely
+        mock_get_yaml_config.return_value = yaml.load(
+            self.yaml_config_no_expected2)
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        self.assertEqual(200, manager.sites[0].expected_status_code)
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_config(self, mock_get_yaml_config):
