@@ -93,7 +93,6 @@ class MonitorManager:
 def main():
     manager = MonitorManager()
     manager.parse_config()
-    print(manager.sites)
     manager.check_sites()
 
 if __name__ == '__main__':
