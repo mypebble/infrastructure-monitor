@@ -17,6 +17,9 @@ class MonitorSite:
                 status_code=self.expected_status_code)
 
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
         return self.__unicode__().encode('utf-8')
 
     def get_status_code(self):
