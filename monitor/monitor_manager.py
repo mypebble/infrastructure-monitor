@@ -14,26 +14,27 @@ from slack.slack import Slack
 def get_yaml_config(config_file="config.yaml"):
     try:
         with open(config_file, 'r') as yaml_file:
-            yaml = load(yaml_file)
+            data = load(yaml_file)
     except IOError:
         raise NoConfigFound
-    except ComposerError:
-        raise MalformedConfig
-    except ScannerError:
+    except (ComposerError, ScannerError):
         raise MalformedConfig
 
-    return yaml
+    return data
 
 
 class MalformedConfig(Exception):
     def __init__(self):
-        Exception.__init__(self, "A malformed config file has been found. "
-                                 "Check the formatting")
+        super(MalformedConfig, self).__init__(
+            "A malformed config file has been found. Please check the "
+            "formatting of your config.yaml file.")
 
 
 class NoConfigFound(Exception):
     def __init__(self):
-        Exception.__init__(self, "No config file has been found")
+        super(NoConfigFound, self).__init__(
+            "No config file has been found. Please ensure you have a "
+            "config.yaml file and it is correctly formatted.")
 
 
 class MonitorManager:
@@ -46,39 +47,29 @@ class MonitorManager:
     def set_config(self, config_file="config.yaml"):
         try:
             self.config = get_yaml_config(config_file)
-        except NoConfigFound:
-            self.slack.post_message("No config file has been found. Please "
-                                    "ensure you have a config.yaml file.")
-        except MalformedConfig:
-            self.slack.post_message("A malformed config file has been found. "
-                                    "Please check the formatting of your "
-                                    "config.yaml file.")
+        except (NoConfigFound, MalformedConfig) as e:
+            self.slack.post_message(e.message)
 
     def parse_config(self):
         if not self.config:
             self.set_config()
 
         if self.config:
-            if 'sites' in self.config:
-                for site in self.config['sites']:
-                    _site = MonitorSite(site['url'],
-                                        site['status_code'])
-                    self.sites.append(_site)
+            for site in self.config.get('sites', []):
+                _site = MonitorSite(site['url'], site['status_code'])
+                self.sites.append(_site)
 
-            if 'domains' in self.config:
-                for domain in self.config['domains']:
-                    self.domains.append(domain['url'])
+            for domain in self.config.get('domains', []):
+                self.domains.append(domain['url'])
 
     def check_sites(self):
-        error_counter = 0
+        errors = [site.create_slack_message() for site in self.sites
+                  if not site.check_status_code()]
 
-        if len(self.sites) > 0:
-            for site in self.sites:
-                if not site.check_status_code():
-                    self.slack.post_message(site.create_slack_message())
-                    error_counter += 1
+        for error in errors:
+            self.slack.post_message(error)
 
-        return error_counter
+        return len(errors)
 
 
 def main():
