@@ -50,8 +50,8 @@ class MonitorManager:
             slack.post_message("No config file has been found. "
                                "Please ensure you have a config.yaml file.")
         except MalformedConfig:
-            slack.post_message("No config file has been found. "
-                               "Please ensure you have a config.yaml file.")
+            slack.post_message("A malformed config file has been found. "
+                               "Please check your config.yaml file format.")
 
     def parse_config(self):
         if not self.config:
