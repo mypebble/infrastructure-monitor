@@ -5,7 +5,7 @@ Before you deploy, please ensure you set the config file correctly. For advise o
 
 ### Deploying
 To run the program:
-`python ./monitor/monitor_manager.py`
+`python main.py`
 
 This loads in the config and then checks all the sites in the config file.
 
