@@ -56,8 +56,7 @@ class MonitorManager:
 
         if self.config:
             for site in self.config.get('sites', []):
-                _site = MonitorSite(site['url'],
-                                    site['status_code'])
+                _site = MonitorSite(site['url'], site['status_code'])
                 self.sites.append(_site)
 
             for domain in self.config.get('domains', []):
