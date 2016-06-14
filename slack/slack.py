@@ -12,7 +12,7 @@ class Slack:
     slack_api_token = 'xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2'
     slack_username = "@systems.monitor"
     # TODO - set to the status channel
-    slack_channel = '@sam.brennan'  # '@dan.wakenshaw' #  '@joe.simpson'
+    slack_channel = '@sam.brennan'  # '@joe.simpson'  # '@dan.wakenshaw'  #
     slack_emote = ':scream:'
     slack_shoutout = '@devs'
 

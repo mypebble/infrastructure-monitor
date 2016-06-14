@@ -41,17 +41,18 @@ class MonitorManager:
         self.sites = []
         self.domains = []
         self.config = None
+        self.slack = Slack()
 
     def set_config(self, config_file="config.yaml"):
         try:
             self.config = get_yaml_config(config_file)
         except NoConfigFound:
-            slack = Slack()
-            slack.post_message("No config file has been found. "
-                               "Please ensure you have a config.yaml file.")
+            self.slack.post_message("No config file has been found. Please "
+                                    "ensure you have a config.yaml file.")
         except MalformedConfig:
-            slack.post_message("A malformed config file has been found. "
-                               "Please check your config.yaml file format.")
+            self.slack.post_message("A malformed config file has been found. "
+                                    "Please check the formatting of your "
+                                    "config.yaml file.")
 
     def parse_config(self):
         if not self.config:
@@ -74,7 +75,7 @@ class MonitorManager:
         if len(self.sites) > 0:
             for site in self.sites:
                 if not site.check_status_code():
-                    Slack.post_message(site.create_slack_message())
+                    self.slack.post_message(site.create_slack_message())
                     error_counter += 1
 
         return error_counter
