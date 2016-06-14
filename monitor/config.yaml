@@ -1,0 +1,8 @@
+---
+sites:
+- url: http://example.com
+  status_code: 200
+- url: http://example.org
+  status_code: 302
+domains:
+- url: 8.8.8.8
