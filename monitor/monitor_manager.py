@@ -32,10 +32,9 @@ class MalformedConfig(Exception):
 
 class NoConfigFound(Exception):
     def __init__(self):
-        super(NoConfigFound,
-              self).__init__("No config file has been found. Please ensure "
-                             "you have a config.yaml file and it is correctly "
-                             "formatted.")
+        super(NoConfigFound, self).__init__(
+            "No config file has been found. Please ensure you have a "
+            "config.yaml file and it is correctly formatted.")
 
 
 class MonitorManager:
