@@ -46,10 +46,12 @@ class MonitorManager:
         try:
             self.config = get_yaml_config(config_file)
         except NoConfigFound:
-            Slack.post_message("No config file has been found. "
+            slack = Slack()
+            slack.post_message("No config file has been found. "
                                "Please ensure you have a config.yaml file.")
         except MalformedConfig:
-            pass
+            slack.post_message("No config file has been found. "
+                               "Please ensure you have a config.yaml file.")
 
     def parse_config(self):
         if not self.config:
