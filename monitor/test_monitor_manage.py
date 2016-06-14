@@ -6,8 +6,8 @@ from yaml.scanner import ScannerError
 
 from mock import patch, Mock, MagicMock
 
-from monitor.monitor_manager import MonitorManager, MalformedConfig,\
-                                    NoConfigFound, get_yaml_config
+from monitor.monitor_manager import (MonitorManager, MalformedConfig,
+                                     NoConfigFound, get_yaml_config)
 
 from monitor.monitor_site import MonitorSite
 
@@ -63,7 +63,7 @@ class TestParseConfig(unittest.TestCase):
                               "  status_code: 200")
 
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_sites_from_config(self, mock_get_yaml_config):
+    def test_read_sites_config(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config
@@ -83,7 +83,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual(302, sites[1].expected_status_code)
 
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_sites_from_config_reverse_input(self, mock_get_yaml_config):
+    def test_read_sites_config_reverse_input(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config2
@@ -103,8 +103,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual(302, sites[1].expected_status_code)
 
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_sites_from_config_with_only_domains(self,
-                                                      mock_get_yaml_config):
+    def test_read_sites_config_with_only_domains(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config
@@ -117,7 +116,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual([], sites)
 
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_domains_from_config(self, mock_get_yaml_config):
+    def test_read_domains_config(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config
@@ -133,8 +132,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual(domains[0], '8.8.8.8')
 
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_domains_from_config_reverse_input(self,
-                                                    mock_get_yaml_config):
+    def test_read_domains_config_reverse_input(self, mock_get_yaml_config):
         # Using yaml_config2
         mock_get_yaml_config.return_value = yaml.load(self.yaml_config2)
         manager = MonitorManager()
@@ -148,8 +146,7 @@ class TestParseConfig(unittest.TestCase):
         self.assertEqual('8.8.8.8', domains[0])
 
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_domains_from_config_with_only_sites(self,
-                                                      mock_get_yaml_config):
+    def test_read_domains_config_with_only_sites(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config
@@ -161,24 +158,10 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertEqual([], domains)
 
-    @patch('monitor.monitor_manager.load')
-    def test_read_from_blank_config(self, mock_load):
+    def test_read_blank_config(self):
         """Attempts to read from an empty config file
         """
-        try:
-            yaml.load("")
-        except IOError as e:
-            mock_load.side_effect = e
-
-        manager = MonitorManager()
-
-        self.assertEqual([], manager.sites)
-        self.assertEqual([], manager.domains)
-
-        self.assertRaises(NoConfigFound, manager.set_config())
-
-        self.assertEqual([], manager.sites)
-        self.assertEqual([], manager.domains)
+        self.assertRaises(NoConfigFound, get_yaml_config, "")
 
     @patch('monitor.monitor_manager.open')
     def test_malformed_config_file_raises_composer_error(self, mock_open):
@@ -186,6 +169,8 @@ class TestParseConfig(unittest.TestCase):
         """
         mock_open.return_value.__enter__.return_value = \
             self.yaml_config_malformed
+
+        self.assertRaises(ComposerError, yaml.load, self.yaml_config_malformed)
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
@@ -196,16 +181,15 @@ class TestParseConfig(unittest.TestCase):
         mock_open.return_value.__enter__.return_value = \
             self.yaml_config_malformed2
 
-        self.assertRaises(MalformedConfig,
-                          get_yaml_config)
+        self.assertRaises(ScannerError, yaml.load, self.yaml_config_malformed2)
+
+        self.assertRaises(MalformedConfig, get_yaml_config)
 
     @patch('slack.slack.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
-    def test_status_code_expected_single(self,
-                                         mock_requests,
-                                         mock_get_yaml_config,
-                                         mock_slack_post_message):
+    def test_status_code_expected_single(self, mock_requests,
+            mock_get_yaml_config, mock_slack_post_message):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
         """

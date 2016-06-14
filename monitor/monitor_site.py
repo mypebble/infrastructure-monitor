@@ -13,15 +13,15 @@ class MonitorSite:
         self.expected_status_code = expected_status_code
 
     def __str__(self):
-            return "(URL: {url}, Expected Status Code: {status_code})" \
-                .format(url=self.url,
-                        status_code=self.expected_status_code)
+            return u"(URL: {url}, Expected Status Code: {status_code})".format(
+                url=self.url,
+                status_code=self.expected_status_code)
 
     def __repr__(self):
         return self.__str__()
 
     def get_status_code(self):
-        if not self.status_code:
+        if self.status_code is None:
             try:
                 self.status_code = get(url=self.url).status_code
             except MissingSchema:
