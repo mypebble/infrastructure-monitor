@@ -4,7 +4,7 @@ import yaml
 from yaml.composer import ComposerError
 from yaml.scanner import ScannerError
 
-from requests.exceptions import MissingSchema
+from requests.exceptions import ConnectionError, MissingSchema
 
 from mock import patch
 
@@ -106,10 +106,10 @@ class TestParseConfig(unittest.TestCase):
         "- url: example.com"
         "  status_code: 200\n")
 
-    yaml_config_malformed3 = (
-        "---"
-        "sites:"
-        "- url: http://example"
+    yaml_config_no_suffix = (
+        "---\n"
+        "sites:\n"
+        "- url: http://example\n"
         "  status_code: 200\n")
 
     @patch('monitor.monitor_manager.get_yaml_config')
@@ -189,7 +189,23 @@ class TestParseConfig(unittest.TestCase):
 
         # Called six times because yaml_config5 has four sites plus the
         #   previous two
-        self.assertEqual(6, mock_slack.call_count)
+        self.assertEqual(6, mock_slack.call_count)\
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_site.get')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_site_without_suffix(self, mock_get_yaml_config, mock_requests,
+                                   mock_slack):
+        # Part 1 with yaml_config4
+        mock_get_yaml_config.return_value = yaml.load(
+            self.yaml_config_no_suffix)
+        mock_requests.side_effects = ConnectionError
+        manager = MonitorManager()
+        manager.parse_config()
+        manager.check_sites()
+
+        # Called twice because yaml_config4 has two sites in it
+        self.assertEqual(1, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
