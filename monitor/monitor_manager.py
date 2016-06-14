@@ -64,7 +64,7 @@ class MonitorManager:
 
     def check_sites(self):
         errors = [site.create_slack_message() for site in self.sites
-                  if not self.check_status_code()]
+                  if not site.check_status_code()]
 
         for error in errors:
             self.slack.post_message(error)
