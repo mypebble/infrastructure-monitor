@@ -8,18 +8,17 @@ from slacker import Slacker
 
 
 class Slack:
-    # TODO - Move all these settings into config
-    # The bots token
-    slack_api_token = 'xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2'
-    slack_username = "@systems.monitor"
-    slack_channel = '#status'  # '@sam.brennan'  #
-    slack_emote = ':scream:'
-    slack_shoutout = '@devs'
+    def __init__(self, config):
+        self.slack_api_token = config['slack_api_token']
+        self.slack_username = config['slack_username']
+        self.slack_channel = config['slack_channel']
+        self.slack_emote = config['slack_emote']
+        self.slack_shoutout = config['slack_shoutout']
 
-    slack_text_prefix = 'System Error {shoutout}: '.format(
-        shoutout=slack_shoutout)
+        self.slack_text_prefix = 'System Error {shoutout}: '.format(
+            shoutout=self.slack_shoutout)
 
-    slack = Slacker(slack_api_token)
+        self.slack = Slacker(self.slack_api_token)
 
     def post_message(self, text):
         self.slack.chat.post_message(channel=self.slack_channel,

@@ -10,12 +10,21 @@ from requests.exceptions import ConnectionError, MissingSchema
 from mock import patch
 
 from monitor.monitor_manager import (MonitorManager, MalformedConfig,
-                                     NoConfigFound, get_yaml_config)
+                                     NoConfigFound)
+
+from utils.parse_yaml import get_yaml_config
 
 from monitor.monitor_site import MonitorSite
 
 
 class TestMonitorManager(unittest.TestCase):
+    slack_config = {
+        'slack_api_token': '',
+        'slack_channel': '',
+        'slack_emote': '',
+        'slack_shoutout': '',
+        'slack_username': ''}
+
     yaml_config = (
         "---\n"
         "sites:\n"
@@ -128,8 +137,8 @@ class TestMonitorManager(unittest.TestCase):
     def test_read_sites_config(self, mock_get_yaml_config, mock_slack):
         """Checks that a config file is correctly read in.
         """
-        # Using yaml_config
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config)
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
@@ -153,8 +162,8 @@ class TestMonitorManager(unittest.TestCase):
     def test_read_sites_config_reverse_input(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
-        # Using yaml_config2
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config2)
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config2),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
@@ -173,8 +182,8 @@ class TestMonitorManager(unittest.TestCase):
     def test_read_sites_config_with_only_domains(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
-        # Using yaml_config
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config3)
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config3),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
@@ -188,7 +197,8 @@ class TestMonitorManager(unittest.TestCase):
     def test_site_without_protocol(self, mock_get_yaml_config, mock_requests,
                                    mock_slack):
         # Part 1 with yaml_config4
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config4)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config4), self.slack_config]
         mock_requests.side_effects = MissingSchema
         manager = MonitorManager()
         manager.parse_config()
@@ -198,7 +208,8 @@ class TestMonitorManager(unittest.TestCase):
         self.assertEqual(2, mock_slack.call_count)
 
         # Part 2 with yaml_config5
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config5)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config5), self.slack_config]
         mock_requests.side_effects = MissingSchema
         manager = MonitorManager()
         manager.parse_config()
@@ -206,22 +217,20 @@ class TestMonitorManager(unittest.TestCase):
 
         # Called six times because yaml_config5 has four sites plus the
         #   previous two
-        self.assertEqual(6, mock_slack.call_count)\
+        self.assertEqual(6, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_site.get')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_site_without_suffix(self, mock_get_yaml_config, mock_requests,
-                                   mock_slack):
-        # Part 1 with yaml_config4
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_no_suffix)
+                                 mock_slack):
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_no_suffix), self.slack_config]
         mock_requests.side_effects = ConnectionError
         manager = MonitorManager()
         manager.parse_config()
         manager.check_sites()
 
-        # Called twice because yaml_config4 has two sites in it
         self.assertEqual(1, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.Slack.post_message')
@@ -231,8 +240,9 @@ class TestMonitorManager(unittest.TestCase):
         """If there is no url in the config, but there is an expected code then
         a slack alert should be sent to notify the config needs fixing.
         """
-        # With status_code:
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config_no_url)
+        # With a blank url:
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config_no_url),
+                                            self.slack_config]
 
         manager = MonitorManager()
         manager.parse_config()
@@ -241,7 +251,8 @@ class TestMonitorManager(unittest.TestCase):
         self.assertEqual(1, mock_slack.call_count)
 
         # With url: missing completely
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config_no_url2)
+        mock_get_yaml_config.side_effect = [yaml.load(
+            self.yaml_config_no_url2), self.slack_config]
 
         manager = MonitorManager()
         manager.parse_config()
@@ -255,8 +266,8 @@ class TestMonitorManager(unittest.TestCase):
         url, then 200 should be used as a default
         """
         # With status_code:
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_no_expected)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_no_expected), self.slack_config]
 
         manager = MonitorManager()
         manager.parse_config()
@@ -264,8 +275,8 @@ class TestMonitorManager(unittest.TestCase):
         self.assertEqual(200, manager.sites[0].expected_status_code)
 
         # With status_code: missing completely
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_no_expected2)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_no_expected2), self.slack_config]
 
         manager = MonitorManager()
         manager.parse_config()
@@ -277,7 +288,9 @@ class TestMonitorManager(unittest.TestCase):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config)
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config),
+                                            self.slack_config]
+
         manager = MonitorManager()
         manager.parse_config()
 
@@ -291,7 +304,9 @@ class TestMonitorManager(unittest.TestCase):
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_config_reverse_input(self, mock_get_yaml_config):
         # Using yaml_config2
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config2)
+
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config2),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
@@ -306,8 +321,8 @@ class TestMonitorManager(unittest.TestCase):
     def test_read_domains_config_with_only_sites(self, mock_get_yaml_config):
         """Checks that a config file is correctly read in.
         """
-        # Using yaml_config
-        mock_get_yaml_config.return_value = yaml.load(self.yaml_config4)
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config4),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
@@ -320,7 +335,7 @@ class TestMonitorManager(unittest.TestCase):
         """
         self.assertRaises(NoConfigFound, get_yaml_config, "")
 
-    @patch('monitor.monitor_manager.open')
+    @patch('utils.parse_yaml.open')
     def test_malformed_config_file_raises_composer_error(self, mock_open):
         """Attempts to read from a malformed config file
         """
@@ -331,7 +346,7 @@ class TestMonitorManager(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
-    @patch('monitor.monitor_manager.open')
+    @patch('utils.parse_yaml.open')
     def test_malformed_config_file_raises_scanner_error(self, mock_open):
         """Attempts to read from a malformed config file
         """
@@ -342,7 +357,7 @@ class TestMonitorManager(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
-    @patch('monitor.monitor_manager.open')
+    @patch('utils.parse_yaml.open')
     def test_malformed_config_file_raises_parser_error(self, mock_open):
         """Attempts to read from a malformed config file
         """
@@ -361,8 +376,8 @@ class TestMonitorManager(unittest.TestCase):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
         """
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_single_site)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_single_site), self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
         response_status_code = manager.sites[0].expected_status_code
@@ -379,8 +394,8 @@ class TestMonitorManager(unittest.TestCase):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_single_site)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_single_site), self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
         response_status_code = manager.sites[0].expected_status_code + 1
@@ -399,8 +414,9 @@ class TestMonitorManager(unittest.TestCase):
         """Test monitor manager doesn't send a message if the response status
         code matches the expected status code.
         """
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_multiple_sites)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_multiple_sites), self.slack_config]
+
         manager = MonitorManager()
         manager.parse_config()
         response_status_code = manager.sites[0].expected_status_code
@@ -422,8 +438,8 @@ class TestMonitorManager(unittest.TestCase):
         """Test monitor manager sends a message if the response status
         code does not match the expected status code.
         """
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config_multiple_sites)
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_multiple_sites), self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
         response_status_code = manager.sites[0].expected_status_code + 1
