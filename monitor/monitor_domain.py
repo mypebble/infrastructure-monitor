@@ -2,7 +2,7 @@
 from dns.resolver import query
 
 
-class MonitorDomain:
+class MonitorDomain(object):
     def __init__(self, url):
         self.url = url
 

@@ -7,7 +7,7 @@ Sends a message to Slack using the chat.postMessage API call.
 from slacker import Slacker
 
 
-class Slack:
+class Slack(object):
     def __init__(self, config):
         self.slack_api_token = config['slack_api_token']
         self.slack_username = config['slack_username']

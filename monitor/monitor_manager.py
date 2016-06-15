@@ -14,7 +14,7 @@ from monitor_domain import MonitorDomain
 from slack.slack import Slack
 
 
-class MonitorManager:
+class MonitorManager(object):
     def __init__(self, config_file="config.yaml",
                  slack_config_file="slack_config.yaml"):
         self.config_file = config_file
@@ -36,6 +36,9 @@ class MonitorManager:
             self.slack.post_message(e.message)
 
     def parse_config(self):
+        self.sites = []
+        self.domains = []
+
         if self.parsed_config:
             for site in self.parsed_config.get('sites', []):
                 self.parse_site(site)
@@ -47,7 +50,7 @@ class MonitorManager:
         try:
             if site['url']:
                 _site = MonitorSite(site['url'], site.get(
-                    'status_code', None))
+                    'status_code', 200))
                 self.sites.append(_site)
             else:
                 raise KeyError("Rabbits")
@@ -62,7 +65,7 @@ class MonitorManager:
             errors = [site.create_slack_message() for site in self.sites
                       if not site.check_status_code()]
         except (ConnectionError, MissingSchema) as e:
-            self.slack.post_message(str(e.message))
+            self.slack.post_message(unicode(e.message))
 
         for error in errors:
             self.slack.post_message(error)

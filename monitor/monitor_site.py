@@ -2,17 +2,19 @@
 from requests import get
 
 
-class MonitorSite:
+class MonitorSite(object):
     """Class for monitoring the status of a website and checking it against an
      expected status.
     """
     def __init__(self, url, expected_status_code=200):
         self.status_code = None
         self.url = url
-        if expected_status_code is not None:
-            self.expected_status_code = expected_status_code
-        else:
-            self.expected_status_code = 200
+
+        self.expected_status_code = expected_status_code
+        # if expected_status_code is not None:
+        #     self.expected_status_code = expected_status_code
+        # else:
+        #     self.expected_status_code = 200
 
     def __unicode__(self):
             return u"(URL: {url}, Expected Status Code: {status_code})".format(
