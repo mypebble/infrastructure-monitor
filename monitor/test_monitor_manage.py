@@ -3,6 +3,7 @@ import yaml
 
 from yaml.composer import ComposerError
 from yaml.scanner import ScannerError
+from yaml.parser import ParserError
 
 from requests.exceptions import ConnectionError, MissingSchema
 
@@ -14,7 +15,7 @@ from monitor.monitor_manager import (MonitorManager, MalformedConfig,
 from monitor.monitor_site import MonitorSite
 
 
-class TestParseConfig(unittest.TestCase):
+class TestMonitorManager(unittest.TestCase):
     yaml_config = (
         "---\n"
         "sites:\n"
@@ -106,14 +107,25 @@ class TestParseConfig(unittest.TestCase):
         "- url: example.com"
         "  status_code: 200\n")
 
+    yaml_config_malformed3 = (
+        "---\n"
+        "sites:\n"
+        "  - url: http://example.co.uk\n"
+        "  status_code: 200\n"
+        "- url: http://example.org\n"
+        "  status_code: 302\n"
+        "domains:\n"
+        "- domain: 8.8.8.8\n")
+
     yaml_config_no_suffix = (
         "---\n"
         "sites:\n"
         "- url: http://example\n"
         "  status_code: 200\n")
 
+    @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_sites_config(self, mock_get_yaml_config):
+    def test_read_sites_config(self, mock_get_yaml_config, mock_slack):
         """Checks that a config file is correctly read in.
         """
         # Using yaml_config
@@ -121,10 +133,15 @@ class TestParseConfig(unittest.TestCase):
         manager = MonitorManager()
         manager.parse_config()
 
+        manager.check_domains()
+
         sites = manager.sites
 
         for site in sites:
             self.assertTrue(isinstance(site, MonitorSite))
+
+        self.assertEqual(2, len(sites))
+        self.assertEqual(0, mock_slack.call_count)
 
         self.assertEqual('example.uk', sites[0].url)
         self.assertEqual(200, sites[0].expected_status_code)
@@ -325,6 +342,17 @@ class TestParseConfig(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
+    @patch('monitor.monitor_manager.open')
+    def test_malformed_config_file_raises_parser_error(self, mock_open):
+        """Attempts to read from a malformed config file
+        """
+        mock_open.return_value.__enter__.return_value = \
+            self.yaml_config_malformed3
+
+        self.assertRaises(ParserError, yaml.load, self.yaml_config_malformed3)
+
+        self.assertRaises(MalformedConfig, get_yaml_config)
+
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     @patch('monitor.monitor_site.get')
@@ -403,6 +431,29 @@ class TestParseConfig(unittest.TestCase):
         manager.check_sites()
 
         self.assertEqual(2, mock_slack_post_message.call_count)
+
+
+class TestMonitorManagerDomains(unittest.TestCase):
+    yaml_config = (
+        "---\n"
+        "domains:\n"
+        "- domain: 8.8.8.8\n"
+        "- domain: example.com\n")
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_domain(self, mock_get_yaml_config, mock_slack):
+
+        mock_get_yaml_config.return_value = yaml.load(
+            self.yaml_config)
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        self.assertTrue(manager.check_domains())
+
+        self.assertEqual(2, len(manager.domains))
+        self.assertEqual(0, mock_slack.call_count)
 
 
 if __name__ == '__main__':
