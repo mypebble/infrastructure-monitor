@@ -4,12 +4,9 @@
 Sends a message to Slack if there are any issues detected.
 """
 from requests.exceptions import ConnectionError, MissingSchema
-from utils.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
 
-from dns.resolver import NXDOMAIN
-
+from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
 from monitor_site import MonitorSite
-from monitor_domain import MonitorDomain
 
 from slack.slack import Slack
 

@@ -1,20 +1,15 @@
 import unittest
 import yaml
 
-from yaml.composer import ComposerError
-from yaml.scanner import ScannerError
-from yaml.parser import ParserError
-
-from requests.exceptions import ConnectionError, MissingSchema
-
 from mock import patch
-
 from monitor.monitor_manager import (MonitorManager, MalformedConfig,
                                      NoConfigFound)
-
-from utils.parse_yaml import get_yaml_config
-
 from monitor.monitor_site import MonitorSite
+from monitor.parse_yaml import get_yaml_config
+from requests.exceptions import ConnectionError, MissingSchema
+from yaml.composer import ComposerError
+from yaml.parser import ParserError
+from yaml.scanner import ScannerError
 
 
 class TestMonitorManager(unittest.TestCase):
@@ -335,7 +330,7 @@ class TestMonitorManager(unittest.TestCase):
         """
         self.assertRaises(NoConfigFound, get_yaml_config, "")
 
-    @patch('utils.parse_yaml.open')
+    @patch('monitor.parse_yaml.open')
     def test_malformed_config_file_raises_composer_error(self, mock_open):
         """Attempts to read from a malformed config file
         """
@@ -346,7 +341,7 @@ class TestMonitorManager(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
-    @patch('utils.parse_yaml.open')
+    @patch('monitor.parse_yaml.open')
     def test_malformed_config_file_raises_scanner_error(self, mock_open):
         """Attempts to read from a malformed config file
         """
@@ -357,7 +352,7 @@ class TestMonitorManager(unittest.TestCase):
 
         self.assertRaises(MalformedConfig, get_yaml_config)
 
-    @patch('utils.parse_yaml.open')
+    @patch('monitor.parse_yaml.open')
     def test_malformed_config_file_raises_parser_error(self, mock_open):
         """Attempts to read from a malformed config file
         """
@@ -450,6 +445,13 @@ class TestMonitorManager(unittest.TestCase):
 
 
 class TestMonitorManagerDomains(unittest.TestCase):
+    slack_config = {
+        'slack_api_token': '',
+        'slack_channel': '',
+        'slack_emote': '',
+        'slack_shoutout': '',
+        'slack_username': ''}
+
     yaml_config = (
         "---\n"
         "domains:\n"
@@ -459,9 +461,8 @@ class TestMonitorManagerDomains(unittest.TestCase):
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_domain(self, mock_get_yaml_config, mock_slack):
-
-        mock_get_yaml_config.return_value = yaml.load(
-            self.yaml_config)
+        mock_get_yaml_config.side_effects = [
+            yaml.load(self.yaml_config), self.slack_config]
 
         manager = MonitorManager()
         manager.parse_config()
