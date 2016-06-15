@@ -3,77 +3,87 @@
 
 Sends a message to Slack if there are any issues detected.
 """
-from yaml import load
-from yaml.composer import ComposerError
-from yaml.scanner import ScannerError
+from requests.exceptions import ConnectionError, MissingSchema
 
+from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
 from monitor_site import MonitorSite
+
 from slack.slack import Slack
 
 
-def get_yaml_config(config_file="config.yaml"):
-    try:
-        with open(config_file, 'r') as yaml_file:
-            data = load(yaml_file)
-    except IOError:
-        raise NoConfigFound
-    except (ComposerError, ScannerError):
-        raise MalformedConfig
-
-    return data
-
-
-class MalformedConfig(Exception):
-    def __init__(self):
-        super(MalformedConfig, self).__init__(
-            "A malformed config file has been found. Please check the "
-            "formatting of your config.yaml file.")
-
-
-class NoConfigFound(Exception):
-    def __init__(self):
-        super(NoConfigFound, self).__init__(
-            "No config file has been found. Please ensure you have a "
-            "config.yaml file and it is correctly formatted.")
-
-
-class MonitorManager:
-    def __init__(self):
+class MonitorManager(object):
+    def __init__(self, config_file="config.yaml",
+                 slack_config_file="slack_config.yaml"):
+        self.config_file = config_file
+        self.slack_config_file = slack_config_file
+        self.parsed_config = None
+        self.parsed_slack_config = None
         self.sites = []
         self.domains = []
-        self.config = None
-        self.slack = Slack()
 
-    def set_config(self, config_file="config.yaml"):
+        self.set_config()
+
+        self.slack = Slack(self.parsed_slack_config)
+
+    def set_config(self):
         try:
-            self.config = get_yaml_config(config_file)
+            self.parsed_config = get_yaml_config(self.config_file)
+            self.parsed_slack_config = get_yaml_config(self.slack_config_file)
         except (NoConfigFound, MalformedConfig) as e:
             self.slack.post_message(e.message)
 
     def parse_config(self):
-        if not self.config:
-            self.set_config()
+        self.sites = []
+        self.domains = []
 
-        if self.config:
-            for site in self.config.get('sites', []):
-                _site = MonitorSite(site['url'], site['status_code'])
+        if self.parsed_config:
+            for site in self.parsed_config.get('sites', []):
+                self.parse_site(site)
+
+            for domain in self.parsed_config.get('domains', []):
+                self.domains.append(domain['domain'])
+
+    def parse_site(self, site):
+        try:
+            if site['url']:
+                _site = MonitorSite(site['url'], site.get(
+                    'status_code', 200))
                 self.sites.append(_site)
-
-            for domain in self.config.get('domains', []):
-                self.domains.append(domain['url'])
+            else:
+                raise KeyError("Rabbits")
+        except KeyError:
+            self.slack.post_message("KeyError: Check the url field in your "
+                                    "config.utils, it appears to be missing!")
 
     def check_sites(self):
-        errors = [site.create_slack_message() for site in self.sites
-                  if not site.check_status_code()]
+        errors = []
+
+        try:
+            errors = [site.create_slack_message() for site in self.sites
+                      if not site.check_status_code()]
+        except (ConnectionError, MissingSchema) as e:
+            self.slack.post_message(unicode(e.message))
 
         for error in errors:
             self.slack.post_message(error)
 
         return len(errors)
 
+    def parse_domain(self):
+        pass
+
+    def check_domains(self):
+        errors = []
+
+        try:
+            pass
+        except:
+            pass
+
 
 def main():
-    manager = MonitorManager()
+    manager = MonitorManager(config_file="../config.yaml",
+                             slack_config_file="../slack_config.yaml")
     manager.parse_config()
     print(manager.sites)
     manager.check_sites()

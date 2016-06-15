@@ -80,10 +80,19 @@ class TestMonitorSite(unittest.TestCase):
         self.assertEqual(expected_status_code, status_code)
 
     def test_get_status_code_with_bad_url(self):
+        # No prefix or suffixes
         bad_url = "url"
         expected_status_code = 200
 
         monitor = MonitorSite(url=bad_url,
                               expected_status_code=expected_status_code)
 
-        self.assertRaises(MissingSchema, monitor.get_status_code())
+        self.assertRaises(MissingSchema, monitor.get_status_code)
+
+        bad_url = "url.com"
+        expected_status_code = 200
+
+        monitor = MonitorSite(url=bad_url,
+                              expected_status_code=expected_status_code)
+
+        self.assertRaises(MissingSchema, monitor.get_status_code)

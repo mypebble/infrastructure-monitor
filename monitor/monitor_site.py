@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 from requests import get
-from requests.exceptions import MissingSchema
 
 
-class MonitorSite:
+class MonitorSite(object):
     """Class for monitoring the status of a website and checking it against an
      expected status.
     """
     def __init__(self, url, expected_status_code=200):
         self.status_code = None
         self.url = url
-        self.expected_status_code = expected_status_code
+
+        if expected_status_code is not None:
+            self.expected_status_code = expected_status_code
+        else:
+            self.expected_status_code = 200
 
     def __unicode__(self):
             return u"(URL: {url}, Expected Status Code: {status_code})".format(
@@ -18,14 +21,14 @@ class MonitorSite:
                 status_code=self.expected_status_code)
 
     def __repr__(self):
-        self.__unicode__().encode('utf-8')
+        return self.__str__()
+
+    def __str__(self):
+        return self.__unicode__().encode('utf-8')
 
     def get_status_code(self):
         if self.status_code is None:
-            try:
-                self.status_code = get(url=self.url).status_code
-            except MissingSchema:
-                pass
+            self.status_code = get(url=self.url).status_code
 
         return self.status_code
 

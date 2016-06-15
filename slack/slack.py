@@ -7,20 +7,18 @@ Sends a message to Slack using the chat.postMessage API call.
 from slacker import Slacker
 
 
-class Slack:
-    # The bots token TODO - Take out of config
-    slack_api_token = 'xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2'
-    slack_username = "@systems.monitor"
-    # TODO - set to the status channel
-    slack_channel = '@sam.brennan'  # '@joe.simpson'  # '@dan.wakenshaw'  #
-    slack_emote = ':scream:'
-    slack_shoutout = '@devs'
+class Slack(object):
+    def __init__(self, config):
+        self.slack_api_token = config['slack_api_token']
+        self.slack_username = config['slack_username']
+        self.slack_channel = config['slack_channel']
+        self.slack_emote = config['slack_emote']
+        self.slack_shoutout = config['slack_shoutout']
 
-    # TODO - switch over to slack_shoutout, remove 'this is a test'
-    slack_text_prefix = 'This is a test! System Error {shoutout}: '.format(
-        shoutout=slack_channel)
+        self.slack_text_prefix = 'System Error {shoutout}: '.format(
+            shoutout=self.slack_shoutout)
 
-    slack = Slacker(slack_api_token)
+        self.slack = Slacker(self.slack_api_token)
 
     def post_message(self, text):
         self.slack.chat.post_message(channel=self.slack_channel,
