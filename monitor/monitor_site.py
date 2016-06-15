@@ -10,11 +10,10 @@ class MonitorSite(object):
         self.status_code = None
         self.url = url
 
-        self.expected_status_code = expected_status_code
-        # if expected_status_code is not None:
-        #     self.expected_status_code = expected_status_code
-        # else:
-        #     self.expected_status_code = 200
+        if expected_status_code is not None:
+            self.expected_status_code = expected_status_code
+        else:
+            self.expected_status_code = 200
 
     def __unicode__(self):
             return u"(URL: {url}, Expected Status Code: {status_code})".format(
