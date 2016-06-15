@@ -1,6 +1,8 @@
 import unittest
 import yaml
 
+from unittest import skip
+
 from mock import patch
 from monitor.monitor_manager import (MonitorManager, MalformedConfig,
                                      NoConfigFound)
@@ -458,6 +460,7 @@ class TestMonitorManagerDomains(unittest.TestCase):
         "- domain: 8.8.8.8\n"
         "- domain: example.com\n")
 
+    @unittest.skip("Skipped Monitor Domain tests as it's not been created yet")
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_domain(self, mock_get_yaml_config, mock_slack):
