@@ -1,7 +1,7 @@
 # infrastructure-monitor
 The infrastructure monitoring tool checks active systems and reports issues to Slack
 
-Before you deploy, please ensure you set the config file correctly. For advise on how to do this, please see the Config section below.
+Before you deploy, please ensure you set the config file correctly. For advice on how to do this, please see the Config section below.
 
 ### Deploying
 To run the program:
