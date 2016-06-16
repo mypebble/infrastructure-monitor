@@ -5,7 +5,12 @@ Before you deploy, please ensure you set the config file correctly. For advice o
 
 ### Deploying
 To run the program:
-`python main.py`
+
+`test.py -c <configfile> -s <slack-configfile>`
+
+You may also do `test.py -h` which will display the above.
+
+Finally, you can specify the full name of the argument with `--config` and `--slackconfig`
 
 This loads in the config and then checks all the sites in the config file.
 
@@ -32,7 +37,7 @@ domains:
 
 ##### Sites
 - `url`: this field determines the URL which you would like to check the status of
-- `status_code`: this is the status code which you expect the `url` to have
+- `status_code`: this is the status code which you expect the `url` to have **this field is entirely optional and will default to 200 if missing or blank**
 
 ##### Domains
 - `main`: this is the ip address or url of the domain you would like to check
