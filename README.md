@@ -4,6 +4,18 @@ The infrastructure monitoring tool checks active systems and reports issues to S
 Before you deploy, please ensure you set the config file correctly. For advice on how to do this, please see the Config section below.
 
 ### Deploying
+
+##### Requirements
+
+```
+- libssl-dev
+- libffi-dev
+- python-openssl
+- python-pyasn1
+```
+
+##### Running
+
 To run the program:
 
 `test.py -c <configfile> -s <slack-configfile>`

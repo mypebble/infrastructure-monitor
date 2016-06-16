@@ -13,7 +13,7 @@ def main(argv=None):
     try:
         opts, args = getopt.getopt(argv, "hc:s:", ["config=", "slackconfig="])
     except getopt.GetoptError:
-        print 'main.py -c <configfile> -s <slack-configfile>'
+        print('main.py -c <configfile> -s <slack-configfile>')
         sys.exit(2)
 
     config = None
@@ -21,7 +21,7 @@ def main(argv=None):
 
     for opt, arg in opts:
         if opt == '-h':
-            print 'main.py -c <configfile> -s <slack-configfile>'
+            print('main.py -c <configfile> -s <slack-configfile>')
             sys.exit()
         elif opt in ("-c", "--config"):
             config = arg
