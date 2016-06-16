@@ -31,7 +31,7 @@ sites:
 - url: http://example.org
   status_code: 302
 domains:
-- main: 8.8.8.8
+- domain: 8.8.8.8
 ```
 
 ##### Sites
