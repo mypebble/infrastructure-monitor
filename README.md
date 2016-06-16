@@ -95,3 +95,7 @@ System Error @fire.fighters: No config file has been found. Please ensure you ha
 @my.bot.name BOT [10:00 AM]  
 System Error @fire.fighters: KeyError: Check the url field in your config.yaml, it appears to be missing!
 ```
+```
+@my.bot.name BOT [10:00 AM]  
+System Error @fire.fighters: A malformed config file has been found. Please check the formatting of your config.yaml file.
+```
