@@ -129,6 +129,20 @@ class TestMonitorManager(unittest.TestCase):
         "- url: http://example\n"
         "  status_code: 200\n")
 
+    yaml_config_redirect = (
+        "---\n"
+        "sites:\n"
+        "- url: example.com\n"
+        "  status_code: 302\n")
+
+    yaml_config_redirect_multi = (
+        "---\n"
+        "sites:\n"
+        "- url: example.com\n"
+        "  status_code: 302\n"
+        "- url: example.org\n"
+        "  status_code: 301\n")
+
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_sites_config(self, mock_get_yaml_config, mock_slack):
@@ -445,6 +459,97 @@ class TestMonitorManager(unittest.TestCase):
 
         self.assertEqual(2, mock_slack_post_message.call_count)
 
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.get')
+    def test_status_code_redirect(self, mock_requests, mock_get_yaml_config,
+                                  mock_slack_post_message):
+        """Test monitor manager handles a successful redirection.
+        """
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_redirect), self.slack_config]
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        response_status_code = manager.sites[0].expected_status_code
+        mock_requests.return_value.status_code = 200
+        mock_requests.return_value.history[0].status_code =\
+            response_status_code
+
+        manager.check_sites()
+
+        mock_slack_post_message.assert_not_called()
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.get')
+    def test_status_code_redirect_multi(self, mock_requests,
+                                        mock_get_yaml_config,
+                                        mock_slack_post_message):
+        """Test monitor manager handles a successful redirection.
+        """
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_redirect), self.slack_config]
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        response_status_code = manager.sites[0].expected_status_code
+        mock_requests.return_value.status_code = 200
+        mock_requests.return_value.history[0].status_code =\
+            response_status_code
+
+        manager.check_sites()
+
+        mock_slack_post_message.assert_not_called()
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.get')
+    def test_status_code_redirect_multi(self, mock_requests,
+                                        mock_get_yaml_config,
+                                        mock_slack_post_message):
+        """Test monitor manager handles a successful redirection.
+        """
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_redirect), self.slack_config]
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        response_status_code = manager.sites[0].expected_status_code
+        mock_requests.return_value.status_code = 200
+        mock_requests.return_value.history[0].status_code =\
+            response_status_code
+
+        manager.check_sites()
+
+        mock_slack_post_message.assert_not_called()
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    @patch('monitor.monitor_site.get')
+    def test_status_code_redirect_fail(self, mock_requests,
+                                        mock_get_yaml_config,
+                                        mock_slack_post_message):
+        """Test monitor manager handles a successful redirection.
+        """
+        mock_get_yaml_config.side_effect = [
+            yaml.load(self.yaml_config_redirect), self.slack_config]
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        response_status_code = manager.sites[0].expected_status_code + 1
+        mock_requests.return_value.status_code = 200
+        mock_requests.return_value.history[0].status_code =\
+            response_status_code
+
+        manager.check_sites()
+
+        self.assertEqual(1, mock_slack_post_message.call_count)
+
 
 class TestMonitorManagerDomains(unittest.TestCase):
     slack_config = {
@@ -454,25 +559,44 @@ class TestMonitorManagerDomains(unittest.TestCase):
         'slack_shoutout': '',
         'slack_username': ''}
 
-    yaml_config = (
+    yaml_config_single = (
+        "---\n"
+        "domains:\n"
+        "- domain: 8.8.8.8\n")
+
+    yaml_config_multi = (
         "---\n"
         "domains:\n"
         "- domain: 8.8.8.8\n"
-        "- domain: example.com\n")
+        "- domain: example.com\n"
+        "- domain: example.org\n")
 
-    @unittest.skip("Skipped Monitor Domain tests as it's not been created yet")
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_domain(self, mock_get_yaml_config, mock_slack):
         mock_get_yaml_config.side_effects = [
-            yaml.load(self.yaml_config), self.slack_config]
+            yaml.load(self.yaml_config_single), self.slack_config]
 
         manager = MonitorManager()
         manager.parse_config()
 
         self.assertTrue(manager.check_domains())
 
-        self.assertEqual(2, len(manager.domains))
+        self.assertEqual(1, len(manager.domains))
+        self.assertEqual(0, mock_slack.call_count)
+
+    @patch('monitor.monitor_manager.Slack.post_message')
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_multiple_domains(self, mock_get_yaml_config, mock_slack):
+        mock_get_yaml_config.side_effects = [
+            yaml.load(self.yaml_config_multi), self.slack_config]
+
+        manager = MonitorManager()
+        manager.parse_config()
+
+        self.assertTrue(manager.check_domains())
+
+        self.assertEqual(3, len(manager.domains))
         self.assertEqual(0, mock_slack.call_count)
 
 

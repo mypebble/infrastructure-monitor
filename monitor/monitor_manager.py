@@ -5,10 +5,12 @@ Sends a message to Slack if there are any issues detected.
 """
 from requests.exceptions import ConnectionError, MissingSchema
 
-from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
-from monitor_site import MonitorSite
-
 from slack.slack import Slack
+
+from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
+
+from monitor_site import MonitorSite
+from monitor_domain import MonitorDomain
 
 
 class MonitorManager(object):
@@ -50,7 +52,7 @@ class MonitorManager(object):
                     'status_code', 200))
                 self.sites.append(_site)
             else:
-                raise KeyError("Rabbits")
+                raise KeyError
         except KeyError:
             self.slack.post_message("KeyError: Check the url field in your "
                                     "config.utils, it appears to be missing!")
@@ -69,8 +71,15 @@ class MonitorManager(object):
 
         return len(errors)
 
-    def parse_domain(self):
-        pass
+    def parse_domain(self, domain):
+        try:
+            if domain['url']:
+                _site = MonitorDomain(domain['domain'], domain.get(
+                    'status_code', 200))
+                self.sites.append(_site)
+        except KeyError:
+            self.slack.post_message("KeyError: Check the url field in your "
+                                    "config.utils, it appears to be missing!")
 
     def check_domains(self):
         errors = []
