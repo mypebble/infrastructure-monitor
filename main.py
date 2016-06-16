@@ -10,12 +10,15 @@ from monitor.monitor_manager import MonitorManager
 from slack.slack import Slack
 
 
-def main(argv):
+def main(argv=None):
     try:
         opts, args = getopt.getopt(argv, "hc:s:", ["config=", "slackconfig="])
     except getopt.GetoptError:
         print 'test.py -c <configfile> -s <slack-configfile>'
         sys.exit(2)
+
+    config = None
+    slack_config = None
 
     for opt, arg in opts:
         if opt == '-h':
@@ -44,8 +47,6 @@ def main(argv):
         sys.exit(e.message)
     except Exception as e:
         # TODO - Switch to logger.error and raise something to Sentry
-        slack = Slack()
-        slack.post_message(e.message)
         sys.exit(e.message)
 
 if __name__ == '__main__':
