@@ -46,7 +46,8 @@ def main(argv=None):
         sys.exit(e.message)
     except Exception as e:
         # TODO - Switch to logger.error and raise something to Sentry
-        print("Exiting from an error:\n{error}".format(unicode(e.message)))
+        print(u"Exiting from an error:\n{error}".format(
+            error=unicode(e.message)))
         sys.exit(e.message)
 
 if __name__ == '__main__':
