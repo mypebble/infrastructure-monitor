@@ -293,54 +293,6 @@ class TestMonitorManager(unittest.TestCase):
 
         self.assertEqual(200, manager.sites[0].expected_status_code)
 
-    @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_domains_config(self, mock_get_yaml_config):
-        """Checks that a config file is correctly read in.
-        """
-        # Using yaml_config
-        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config),
-                                            self.slack_config]
-
-        manager = MonitorManager()
-        manager.parse_config()
-
-        domains = manager.domains
-
-        for domain in domains:
-
-            self.assertTrue(isinstance(domain, MonitorDomain))
-
-        self.assertEqual('8.8.8.8', domains[0].url)
-
-    @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_domains_config_reverse_input(self, mock_get_yaml_config):
-        # Using yaml_config2
-
-        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config2),
-                                            self.slack_config]
-        manager = MonitorManager()
-        manager.parse_config()
-
-        domains = manager.domains
-
-        for domain in domains:
-            self.assertTrue(isinstance(domain, MonitorDomain))
-
-        self.assertEqual('8.8.8.8', domains[0].url)
-
-    @patch('monitor.monitor_manager.get_yaml_config')
-    def test_read_domains_config_with_only_sites(self, mock_get_yaml_config):
-        """Checks that a config file is correctly read in.
-        """
-        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config4),
-                                            self.slack_config]
-        manager = MonitorManager()
-        manager.parse_config()
-
-        domains = manager.domains
-
-        self.assertEqual([], domains)
-
     def test_read_blank_config(self):
         """Attempts to read from an empty config file
         """
@@ -571,6 +523,16 @@ class TestMonitorManagerDomains(unittest.TestCase):
         "- domain: example.com\n"
         "- domain: example.org\n")
 
+    yaml_config_no_domains = "---\n"
+
+
+    yaml_config_malformed = (
+        "---\n"
+        "domains:\n"
+        "  - domain: 8.8.8.8\n"
+        "  - domain: example.com\n"
+        "  - domain: example.org\n")
+
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_domain(self, mock_get_yaml_config, mock_slack):
@@ -588,6 +550,7 @@ class TestMonitorManagerDomains(unittest.TestCase):
         self.assertEqual(0, manager.check_domains())
         self.assertEqual(1, len(manager.domains))
         self.assertEqual(0, mock_slack.call_count)
+        self.assertEqual('8.8.8.8', domains[0].url)
 
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
@@ -601,6 +564,19 @@ class TestMonitorManagerDomains(unittest.TestCase):
         self.assertEqual(0, manager.check_domains())
         self.assertEqual(3, len(manager.domains))
         self.assertEqual(0, mock_slack.call_count)
+
+    @patch('monitor.monitor_manager.get_yaml_config')
+    def test_read_domains_config_with_no_domains(self, mock_get_yaml_config):
+        """Checks that a config file is correctly read in.
+        """
+        mock_get_yaml_config.side_effect = [yaml.load(
+            self.yaml_config_no_domains), self.slack_config]
+        manager = MonitorManager()
+        manager.parse_config()
+
+        domains = manager.domains
+
+        self.assertEqual([], domains)
 
 
 if __name__ == '__main__':
