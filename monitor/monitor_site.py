@@ -7,6 +7,7 @@ class MonitorSite(object):
      expected status.
     """
     def __init__(self, url, expected_status_code=200):
+        self.status_code_history = None
         self.status_code = None
         self.url = url
 
@@ -28,7 +29,10 @@ class MonitorSite(object):
 
     def get_status_code(self):
         if self.status_code is None:
-            self.status_code = get(url=self.url).status_code
+            response = get(url=self.url)
+
+            self.status_code = response.status_code
+            self.status_code_history = response.history[0].status_code
 
         return self.status_code
 
@@ -36,7 +40,10 @@ class MonitorSite(object):
         if not self.status_code:
             self.get_status_code()
 
-        if self.expected_status_code == self.status_code:
+        if (self.expected_status_code == self.status_code_history and
+                200 == self.status_code):
+            return True
+        elif self.expected_status_code == self.status_code:
             return True
         else:
             return False

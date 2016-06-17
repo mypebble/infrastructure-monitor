@@ -5,10 +5,12 @@ Sends a message to Slack if there are any issues detected.
 """
 from requests.exceptions import ConnectionError, MissingSchema
 
-from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
-from monitor_site import MonitorSite
-
 from slack.slack import Slack
+
+from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
+
+from monitor_site import MonitorSite
+from monitor_domain import MonitorDomain
 
 
 class MonitorManager(object):
@@ -41,7 +43,7 @@ class MonitorManager(object):
                 self.parse_site(site)
 
             for domain in self.parsed_config.get('domains', []):
-                self.domains.append(domain['domain'])
+                self.parse_domain(domain)
 
     def parse_site(self, site):
         try:
@@ -50,9 +52,18 @@ class MonitorManager(object):
                     'status_code', 200))
                 self.sites.append(_site)
             else:
-                raise KeyError("Rabbits")
+                raise KeyError
         except KeyError:
             self.slack.post_message("KeyError: Check the url field in your "
+                                    "config.utils, it appears to be missing!")
+
+    def parse_domain(self, domain):
+        try:
+            if domain['domain']:
+                _domain = MonitorDomain(domain.get('domain'))
+                self.domains.append(_domain)
+        except KeyError:
+            self.slack.post_message("KeyError: Check the domain field in your "
                                     "config.utils, it appears to be missing!")
 
     def check_sites(self):
@@ -69,16 +80,19 @@ class MonitorManager(object):
 
         return len(errors)
 
-    def parse_domain(self):
-        pass
-
     def check_domains(self):
         errors = []
 
         try:
-            pass
-        except:
-            pass
+            errors = [domain.create_slack_message() for domain in self.domains
+                      if not domain.check_domain()]
+        except (ConnectionError, MissingSchema) as e:
+            self.slack.post_message(unicode(e.message))
+
+        for error in errors:
+            self.slack.post_message(error)
+
+        return len(errors)
 
 
 def main():

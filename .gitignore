@@ -58,9 +58,12 @@ docs/_build/
 # PyBuilder
 target/
 
-#Ipython Notebook
+# Ipython Notebook
 .ipynb_checkpoints
 
 .idea/
 venv/
 
+# Local config
+local_config.yaml
+local_slack_config.yaml

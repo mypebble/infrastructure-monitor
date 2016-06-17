@@ -1,8 +1,6 @@
 ---
 sites:
-- url: http://example.com
-  status_code: 200
-- url: http://example.org
+- url: https://www.joinos.com/
   status_code: 302
 domains:
 - domain: 8.8.8.8

@@ -47,7 +47,7 @@ domains:
 ```
 
 ##### Sites
-- `url`: this field determines the URL which you would like to check the status of
+- `url`: This field determines the URL which you would like to check the status of. This should include `http://` or `https://`
 - `status_code`: this is the status code which you expect the `url` to have **this field is entirely optional and will default to 200 if missing or blank**
 
 ##### Domains
