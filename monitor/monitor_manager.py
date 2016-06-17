@@ -3,7 +3,9 @@
 
 Sends a message to Slack if there are any issues detected.
 """
-from requests.exceptions import ConnectionError, MissingSchema
+from requests.exceptions import ConnectionError, MissingSchema, Timeout
+from dns.resolver import NXDOMAIN
+from dns.exception import DNSException, SyntaxError, Timeout, FormError, TooBig
 
 from slack.slack import Slack
 
@@ -72,7 +74,7 @@ class MonitorManager(object):
         try:
             errors = [site.create_slack_message() for site in self.sites
                       if not site.check_status_code()]
-        except (ConnectionError, MissingSchema) as e:
+        except (ConnectionError, MissingSchema, Timeout) as e:
             self.slack.post_message(unicode(e.message))
 
         for error in errors:
@@ -86,7 +88,8 @@ class MonitorManager(object):
         try:
             errors = [domain.create_slack_message() for domain in self.domains
                       if not domain.check_domain()]
-        except (ConnectionError, MissingSchema) as e:
+        except (NXDOMAIN. DNSException, SyntaxError, Timeout, FormError,
+                TooBig) as e:
             self.slack.post_message(unicode(e.message))
 
         for error in errors:

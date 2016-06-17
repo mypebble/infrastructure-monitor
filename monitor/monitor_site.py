@@ -29,7 +29,7 @@ class MonitorSite(object):
 
     def get_status_code(self):
         if self.status_code is None:
-            response = get(url=self.url)
+            response = get(url=self.url, timeout=10.0)
 
             self.status_code = response.status_code
             self.status_code_history = response.history[0].status_code
