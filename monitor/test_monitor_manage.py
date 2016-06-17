@@ -1,12 +1,11 @@
 import unittest
 import yaml
 
-from unittest import skip
-
 from mock import patch
 from monitor.monitor_manager import (MonitorManager, MalformedConfig,
                                      NoConfigFound)
 from monitor.monitor_site import MonitorSite
+from monitor.monitor_domain import MonitorDomain
 from monitor.parse_yaml import get_yaml_config
 from requests.exceptions import ConnectionError, MissingSchema
 from yaml.composer import ComposerError
@@ -308,9 +307,10 @@ class TestMonitorManager(unittest.TestCase):
         domains = manager.domains
 
         for domain in domains:
-            self.assertTrue(isinstance(domain, str))
 
-        self.assertEqual(domains[0], '8.8.8.8')
+            self.assertTrue(isinstance(domain, MonitorDomain))
+
+        self.assertEqual('8.8.8.8', domains[0].url)
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_config_reverse_input(self, mock_get_yaml_config):
@@ -324,9 +324,9 @@ class TestMonitorManager(unittest.TestCase):
         domains = manager.domains
 
         for domain in domains:
-            self.assertTrue(isinstance(domain, str))
+            self.assertTrue(isinstance(domain, MonitorDomain))
 
-        self.assertEqual('8.8.8.8', domains[0])
+        self.assertEqual('8.8.8.8', domains[0].url)
 
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_read_domains_config_with_only_sites(self, mock_get_yaml_config):
@@ -574,28 +574,31 @@ class TestMonitorManagerDomains(unittest.TestCase):
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_domain(self, mock_get_yaml_config, mock_slack):
-        mock_get_yaml_config.side_effects = [
-            yaml.load(self.yaml_config_single), self.slack_config]
-
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config_single),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
-        self.assertTrue(manager.check_domains())
+        domains = manager.domains
 
+        for domain in domains:
+            self.assertTrue(isinstance(domain, MonitorDomain))
+
+        # 0 errors expected
+        self.assertEqual(0, manager.check_domains())
         self.assertEqual(1, len(manager.domains))
         self.assertEqual(0, mock_slack.call_count)
 
     @patch('monitor.monitor_manager.Slack.post_message')
     @patch('monitor.monitor_manager.get_yaml_config')
     def test_multiple_domains(self, mock_get_yaml_config, mock_slack):
-        mock_get_yaml_config.side_effects = [
-            yaml.load(self.yaml_config_multi), self.slack_config]
-
+        mock_get_yaml_config.side_effect = [yaml.load(self.yaml_config_multi),
+                                            self.slack_config]
         manager = MonitorManager()
         manager.parse_config()
 
-        self.assertTrue(manager.check_domains())
-
+        # 0 errors expected
+        self.assertEqual(0, manager.check_domains())
         self.assertEqual(3, len(manager.domains))
         self.assertEqual(0, mock_slack.call_count)
 
