@@ -5,8 +5,12 @@ Sends a message to Slack if there are any issues detected.
 """
 import sys
 import getopt
+import logging
 
 from monitor.monitor_manager import MonitorManager
+
+
+logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
 
 def main(argv=None):
@@ -45,8 +49,8 @@ def main(argv=None):
     except KeyboardInterrupt as e:
         sys.exit(e.message)
     except Exception as e:
-        # TODO - Switch to logger.error and raise something to Sentry
-        print(u"Exiting from an error:\n{error}".format(
+        # TODO - Raise something to Sentry
+        logging.error(u"Exiting from an error:\n{error}".format(
             error=unicode(e.message)))
         sys.exit(e.message)
 
