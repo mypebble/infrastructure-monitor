@@ -21,9 +21,12 @@ logging.basicConfig(filename='infrastructure-monitor.log',
 
 
 def main(argv=None):
+    logging.info("Started program.")
+
     try:
-        opts, args = getopt.getopt(argv, "hc:s:e:", ["config=", "slackconfig=",
-                                                     "error-sentry_config="])
+        opts, args = getopt.getopt(argv, "hc:s:e:",
+                                   ["configfile=", "slack-configfile=",
+                                    "error-sentry-configfile="])
     except getopt.GetoptError as e:
         print('main.py -c <configfile> -s <slack-configfile> '
               '-e <error-sentry_configfile')
@@ -65,8 +68,19 @@ def main(argv=None):
         else:
             manager = MonitorManager()
 
+        logging.debug("Parsing config.")
         manager.parse_config()
+        logging.debug("Config parsed.")
+
+        logging.debug("Checking sites.")
         manager.check_sites()
+        logging.debug("Sites checked.")
+
+        logging.debug("Checking domains.")
+        manager.check_domains()
+        logging.debug("Domains checked.")
+
+        logging.info("Finished program.")
     except KeyboardInterrupt as e:
         sys.exit(e.message)
     except Exception as e:
