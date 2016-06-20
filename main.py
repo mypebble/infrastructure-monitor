@@ -70,7 +70,7 @@ def main(argv=None):
     except KeyboardInterrupt as e:
         sys.exit(e.message)
     except Exception as e:
-        logging.error(u"Exiting from an error:\n{error}".format(
+        logging.error(u"Exiting from an error: {error}".format(
             error=unicode(e.message)))
 
         if config is not None:
