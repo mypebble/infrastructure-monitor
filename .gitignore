@@ -66,4 +66,5 @@ venv/
 
 # Local config
 local_config.yaml
+local_sentry_config.yaml
 local_slack_config.yaml

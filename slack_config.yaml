@@ -1,6 +1,6 @@
 ---
-slack_api_token: "xoxb-49168260642-Ex0cis6udHxPAHjWvB2HoQy2"
+slack_api_token: "abcd-012345678901-Ab0cde1fgHiJKLmNoP2QrSt3"
 slack_username: "@systems.monitor"
-slack_channel: "@sam.brennan"
+slack_channel: "#status"
 slack_shoutout: "@devs"
 slack_emote: ":scream:"
