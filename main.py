@@ -7,40 +7,52 @@ import sys
 import getopt
 import logging
 
+from raven import Client
 from monitor.monitor_manager import MonitorManager
 
-from raven import Client
+from monitor.parse_yaml import get_yaml_config
 
 
-client = Client('https://7b44b294b11c4b5a88a69c22df64b480:6934c880b80f4e6aa14e'
-                'b9513a3e65b6@app.getsentry.com/83436')
-
-logging.basicConfig(filename='infrastructure-monitor.log', level=logging.INFO)
+logging.basicConfig(filename='infrastructure-monitor.log',
+                    level=logging.INFO,
+                    format='%(asctime)s.%(msecs)d %(levelname)s %(module)s - '
+                           '%(funcName)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
 
 
 def main(argv=None):
     try:
-        opts, args = getopt.getopt(argv, "hc:s:", ["config=", "slackconfig="])
+        opts, args = getopt.getopt(argv, "hc:s:e:", ["config=", "slackconfig=",
+                                                     "error-sentry_config="])
     except getopt.GetoptError as e:
-        print('main.py -c <configfile> -s <slack-configfile>')
+        print('main.py -c <configfile> -s <slack-configfile> '
+              '-e <error-sentry_configfile')
 
         logging.error(u"Invalid parameters passed in: ".format(
             error=unicode(e.message)))
-        client.captureException()
         sys.exit(2)
 
     try:
-        config = None
-        slack_config = None
+        config = "config.yaml"
+        slack_config = "slack_config.yaml"
+        sentry_config = "sentry_config.yaml"
 
         for opt, arg in opts:
             if opt == '-h':
-                print('main.py -c <configfile> -s <slack-configfile>')
+                print('main.py -c <configfile> -s <slack-configfile> '
+                      '-e <error-sentry_configfile')
                 sys.exit()
             elif opt in ("-c", "--config"):
                 config = arg
             elif opt in ("-s", "--slack-configfile"):
                 slack_config = arg
+            elif opt in ("-e", "--error-sentry-configfile"):
+                sentry_config = arg
+
+        sentry_config_data = get_yaml_config(sentry_config)
+
+        if sentry_config_data['sentry_dsn'] is not None:
+            client = Client(sentry_config_data['sentry_dsn'])
 
         # There must be a nicer way of doing this...
         if config and slack_config:
@@ -60,7 +72,10 @@ def main(argv=None):
     except Exception as e:
         logging.error(u"Exiting from an error:\n{error}".format(
             error=unicode(e.message)))
-        client.captureException()
+
+        if config is not None:
+            client.captureException()
+
         sys.exit(e.message)
 
 if __name__ == '__main__':
