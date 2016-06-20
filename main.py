@@ -10,7 +10,7 @@ import logging
 from monitor.monitor_manager import MonitorManager
 
 
-logging.basicConfig(filename='example.log', level=logging.DEBUG)
+logging.basicConfig(filename='infrastructure-monitor.log', level=logging.INFO)
 
 
 def main(argv=None):
