@@ -18,11 +18,11 @@ Before you deploy, please ensure you set the config file correctly. For advice o
 
 To run the program:
 
-`test.py -c <configfile> -s <slack-configfile>`
+`main.py -c <configfile> -s <slack-configfile> -e <error-sentry-configfile>`
 
-You may also do `test.py -h` which will display the above.
+You may also do `main.py -h` which will display the above.
 
-Finally, you can specify the full name of the argument with `--config` and `--slackconfig`
+Finally, you can specify the full name of the argument with `--config`, `--slack-configfile` and `--error-sentry-configfile`
 
 This loads in the config and then checks all the sites in the config file.
 
@@ -111,3 +111,12 @@ System Error @fire.fighters: KeyError: Check the url field in your config.yaml, 
 @my.bot.name BOT [10:00 AM]  
 System Error @fire.fighters: A malformed config file has been found. Please check the formatting of your config.yaml file.
 ```
+
+### Sentry Config
+
+```
+---
+sentry_dsn: "https://0123456789abcdefghijklmnopqrstuv:0123456789abcdefghijklmnopqrstuv@app.getsentry.com/01234"
+```
+
+In order to send errors to sentry, we need to configure the DSN address for the Sentry project. You should set your sentry config file to follow the above format.

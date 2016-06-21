@@ -5,7 +5,7 @@ Sends a message to Slack if there are any issues detected.
 """
 from requests.exceptions import ConnectionError, MissingSchema, Timeout
 from dns.resolver import NXDOMAIN
-from dns.exception import DNSException, SyntaxError, Timeout, FormError, TooBig
+from dns.exception import SyntaxError, Timeout, FormError, TooBig
 
 from slack.slack import Slack
 
@@ -13,6 +13,8 @@ from monitor.parse_yaml import get_yaml_config, NoConfigFound, MalformedConfig
 
 from monitor_site import MonitorSite
 from monitor_domain import MonitorDomain
+
+import logging
 
 
 class MonitorManager(object):
@@ -29,18 +31,21 @@ class MonitorManager(object):
 
         self.slack = Slack(self.parsed_slack_config)
 
+        self.logger = logging.getLogger(__name__)
+
     def set_config(self):
         try:
             self.parsed_config = get_yaml_config(self.config_file)
             self.parsed_slack_config = get_yaml_config(self.slack_config_file)
         except (NoConfigFound, MalformedConfig) as e:
-            self.slack.post_message(e.message)
+            self.slack.post_message(unicode(e.message))
+            self.logger.error(unicode(e.message))
 
     def parse_config(self):
         self.sites = []
         self.domains = []
 
-        if self.parsed_config:
+        if self.parsed_config is not None:
             for site in self.parsed_config.get('sites', []):
                 self.parse_site(site)
 
@@ -49,7 +54,7 @@ class MonitorManager(object):
 
     def parse_site(self, site):
         try:
-            if site['url']:
+            if site['url'] is not None:
                 _site = MonitorSite(site['url'], site.get(
                     'status_code', 200))
                 self.sites.append(_site)
@@ -58,15 +63,19 @@ class MonitorManager(object):
         except KeyError:
             self.slack.post_message("KeyError: Check the url field in your "
                                     "config.utils, it appears to be missing!")
+            self.logger.error("KeyError: Check the url field in your "
+                              "config.utils, it appears to be missing!")
 
     def parse_domain(self, domain):
         try:
-            if domain['domain']:
+            if domain['domain'] is not None:
                 _domain = MonitorDomain(domain.get('domain'))
                 self.domains.append(_domain)
         except KeyError:
             self.slack.post_message("KeyError: Check the domain field in your "
                                     "config.utils, it appears to be missing!")
+            self.logger.error("KeyError: Check the domain field in your "
+                              "config.utils, it appears to be missing!")
 
     def check_sites(self):
         errors = []
@@ -76,9 +85,11 @@ class MonitorManager(object):
                       if not site.check_status_code()]
         except (ConnectionError, MissingSchema, Timeout) as e:
             self.slack.post_message(unicode(e.message))
+            self.logger.error(unicode(e.message))
 
         for error in errors:
             self.slack.post_message(error)
+            self.logger.error(error)
 
         return len(errors)
 
@@ -88,12 +99,14 @@ class MonitorManager(object):
         try:
             errors = [domain.create_slack_message() for domain in self.domains
                       if not domain.check_domain()]
-        except (NXDOMAIN. DNSException, SyntaxError, Timeout, FormError,
+        except (NXDOMAIN.DNSException, SyntaxError, Timeout, FormError,
                 TooBig) as e:
             self.slack.post_message(unicode(e.message))
+            self.logger.error(unicode(e.message))
 
         for error in errors:
             self.slack.post_message(error)
+            self.logger.error(error)
 
         return len(errors)
 
