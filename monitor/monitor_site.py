@@ -33,7 +33,10 @@ class MonitorSite(object):
 
             self.status_code = response.status_code
             if str(self.expected_status_code).startswith('3'):
-                self.status_code_history = response.history[0].status_code
+                try:
+                    self.status_code_history = response.history[0].status_code
+                except IndexError:
+                    self.status_code_history = None
 
         return self.status_code
 
