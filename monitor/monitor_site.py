@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 from requests import get
+from requests.exceptions import ReadTimeout
 
 
 class MonitorSite(object):
     """Class for monitoring the status of a website and checking it against an
      expected status.
     """
-    def __init__(self, url, expected_status_code=200):
+    def __init__(self, url, expected_status_code=200, slack=None):
         self.status_code_history = None
         self.status_code = None
         self.url = url
+        self.slack = slack
 
         if expected_status_code is not None:
             self.expected_status_code = expected_status_code
@@ -29,9 +31,16 @@ class MonitorSite(object):
 
     def get_status_code(self):
         if self.status_code is None:
-            response = get(url=self.url, timeout=10.0)
+
+            try:
+                response = get(url=self.url, timeout=10.0)
+            except ReadTimeout as e:
+                error = self.create_slack_message(e.message)
+                self.slack.post_message(error)
+                return None
 
             self.status_code = response.status_code
+
             if str(self.expected_status_code).startswith('3'):
                 try:
                     self.status_code_history = response.history[0].status_code
@@ -52,13 +61,17 @@ class MonitorSite(object):
         else:
             return False
 
-    def create_slack_message(self):
-        message = ("Error at {url}. Expected status code expected: {expected}"
-                   " | Actual status code: {actual}"
-                   .format(url=self.url,
-                           expected=self.expected_status_code,
-                           actual=self.status_code)
-                   )
+    def create_slack_message(self, error=None):
+        if error is None:
+            message = ("Error at {url}. Expected status code expected: "
+                       "{expected} | Actual status code: {actual}"
+                       .format(url=self.url,
+                               expected=self.expected_status_code,
+                               actual=self.status_code)
+                       )
+        else:
+            message = ("Error at {url}. {error}".format(url=self.url,
+                                                        error=error))
 
         return message
 
