@@ -32,7 +32,8 @@ class MonitorSite(object):
             response = get(url=self.url, timeout=10.0)
 
             self.status_code = response.status_code
-            self.status_code_history = response.history[0].status_code
+            if str(self.expected_status_code).startswith('3'):
+                self.status_code_history = response.history[0].status_code
 
         return self.status_code
 
