@@ -56,7 +56,7 @@ class MonitorManager(object):
         try:
             if site['url'] is not None:
                 _site = MonitorSite(site['url'], site.get(
-                    'status_code', 200))
+                    'status_code', 200), self.slack)
                 self.sites.append(_site)
             else:
                 raise KeyError
