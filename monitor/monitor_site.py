@@ -41,13 +41,16 @@ class MonitorSite(object):
 
             self.status_code = response.status_code
 
-            if str(self.expected_status_code).startswith('3'):
-                try:
-                    self.status_code_history = response.history[0].status_code
-                except IndexError:
-                    self.status_code_history = None
+            self._expected_redirect(response)
 
         return self.status_code
+
+    def _expected_redirect(self, response):
+        if str(self.expected_status_code).startswith('3'):
+            try:
+                self.status_code_history = response.history[0].status_code
+            except IndexError:
+                self.status_code_history = None
 
     def check_status_code(self):
         if not self.status_code:
